@@ -33,9 +33,14 @@
     <TypeScriptCompile Include="lib\p2.d.ts" />
     <TypeScriptCompile Include="lib\phaser.d.ts" />
     <TypeScriptCompile Include="lib\pixi.d.ts" />
+<<<<<<< HEAD
     <TypeScriptCompile Include="src\Player\Player.ts" />
     <TypeScriptCompile Include="src\Player\TempGrid.ts" />
     <TypeScriptCompile Include="src\Player\TempTile.ts" />
+=======
+    <TypeScriptCompile Include="src\Enemy\Enemy.ts" />
+    <TypeScriptCompile Include="tsd\socket.io.d.ts" />
+>>>>>>> d27efbafc119f88e1e7897bb10cf24b240a05207
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -46,7 +51,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <Folder Include="assets\TestingAssets\" />
+=======
+    <Folder Include="assets\" />
+>>>>>>> d27efbafc119f88e1e7897bb10cf24b240a05207
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
@@ -77,6 +86,18 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptTarget>ES6</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptModuleKind>System</TypeScriptModuleKind>
+    <TypeScriptOutFile>app.js</TypeScriptOutFile>
+    <TypeScriptOutDir>
+    </TypeScriptOutDir>
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
