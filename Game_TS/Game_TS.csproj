@@ -33,6 +33,9 @@
     <TypeScriptCompile Include="lib\p2.d.ts" />
     <TypeScriptCompile Include="lib\phaser.d.ts" />
     <TypeScriptCompile Include="lib\pixi.d.ts" />
+    <TypeScriptCompile Include="src\Player\Player.ts" />
+    <TypeScriptCompile Include="src\Player\TempGrid.ts" />
+    <TypeScriptCompile Include="src\Player\TempTile.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -43,8 +46,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="assets\" />
-    <Folder Include="src\" />
+    <Folder Include="assets\TestingAssets\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
