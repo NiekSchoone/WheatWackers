@@ -14,12 +14,12 @@
         this.gridHeight = _gridHeight;
         this.Tiles = [];
 
-        for (let x = 0; x < this.gridWidth; x++){
-            this.Tiles[x] = [];
-            for (let y = 0; y < this.gridHeight; y++) {
+        for (let y = 0; y < this.gridWidth; y++){
+            this.Tiles[y] = [];
+            for (let x = 0; x < this.gridHeight; x++) {
                 let newTile: Tile = new Tile(this.game, x, y);
-                newTile.setTile(1 as TileState);
-                this.Tiles[x][y] = newTile;
+                newTile.setTile((Math.floor(Math.random() * 4)) as TileState);
+                this.Tiles[y][x] = newTile;
             }
         }
         this.tilewidth = this.Tiles[0][0].tileSize;

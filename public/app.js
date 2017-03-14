@@ -6,17 +6,24 @@ class Game {
         });*/
     }
     preload() {
-        this.game.load.image('background', 'Images/background.png');
-        this.game.load.image('wheat_1', 'Images/wheat_01.png');
-        this.game.load.image('wheat_2', 'Images/wheat_02.png');
-        this.game.load.image('wheat_3', 'Images/wheat_03.png');
-        this.game.load.image('wheat_4', 'Images/wheat_04.png');
-        this.game.load.image('wheat_5', 'Images/wheat_05.png');
-        this.game.load.image('wheat_cut', 'Images/wheat_cut.png');
-        this.game.load.image('button_join', 'Images/button_join.png');
+        this.game.load.image('background', 'Images/Level/background.jpg');
+        this.game.load.image('wheat_1', 'Images/Level/wheat_01.png');
+        this.game.load.image('wheat_2', 'Images/Level/wheat_02.png');
+        this.game.load.image('wheat_3', 'Images/Level/wheat_03.png');
+        this.game.load.image('wheat_4', 'Images/Level/wheat_04.png');
+        this.game.load.image('wheat_5', 'Images/Level/wheat_05.png');
+        this.game.load.image('wheat_cut_1', 'Images/Level/wheat_cut_01.png');
+        this.game.load.image('wheat_cut_2', 'Images/Level/wheat_cut_02.png');
+        this.game.load.image('wheat_cut_3', 'Images/Level/wheat_cut_03.png');
+        this.game.load.image('obstacle_1', 'Images/Level/obstacle_01.png');
+        this.game.load.image('obstacle_2', 'Images/Level/obstacle_02.png');
+        this.game.load.image('obstacle_3', 'Images/Level/obstacle_03.png');
+        this.game.load.image('button_join', 'Images/Level/button_join.png');
     }
     create() {
         this.background = new Phaser.TileSprite(this.game, 0, 0, 864, 864, 'background');
+        this.background.texture.width = 864;
+        this.background.texture.height = 864;
         this.game.add.existing(this.background);
         this.grid = new Grid(this.game);
         this.grid.generateGrid(6, 6);
@@ -34,17 +41,29 @@ class Grid {
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
         this.Tiles = [];
-        for (let x = 0; x < this.gridWidth; x++) {
-            this.Tiles[x] = [];
-            for (let y = 0; y < this.gridHeight; y++) {
+        for (let y = 0; y < this.gridWidth; y++) {
+            this.Tiles[y] = [];
+            for (let x = 0; x < this.gridHeight; x++) {
                 let newTile = new Tile(this.game, x, y);
-                newTile.setTile(1);
-                this.Tiles[x][y] = newTile;
+                newTile.setTile((Math.floor(Math.random() * 4)));
+                this.Tiles[y][x] = newTile;
             }
         }
+        this.tilewidth = this.Tiles[0][0].tileSize;
     }
     getTile(_x, _y) {
         return this.Tiles[_x][_y];
+    }
+    // get tile at player postion +/- directionX and directionY
+    getTileAtPlayer(playerX, playerY, directionX, directionY) {
+        playerX /= this.tilewidth + directionX;
+        playerY /= this.tilewidth + directionY;
+        if ((playerX > this.Tiles.length - 1 || playerX < 0) || (playerY > this.Tiles[0].length - 1 || playerY < 0)) {
+            return null;
+        }
+        else {
+            return this.Tiles[playerX][playerY];
+        }
     }
 }
 var TileState;
@@ -69,11 +88,11 @@ class Tile {
     }
     // world X coordinates
     getX() {
-        return this.xPos * this.tileSize;
+        return this.xPos * this.tileSize + (this.tileSize / 2);
     }
     // world Y coordinates
     getY() {
-        return this.yPos * this.tileSize;
+        return this.yPos * this.tileSize + (this.tileSize / 2);
     }
     // is occupied by wheat
     GetState() {
@@ -87,17 +106,20 @@ class Tile {
                     this.currentSprite.loadTexture('');
                     break;
                 case TileState.WHEAT:
-                    this.currentSprite.loadTexture('wheat_1');
+                    this.currentSprite.loadTexture('wheat_' + this.getRandomNumber(5));
                     break;
                 case TileState.CUT:
-                    this.currentSprite.loadTexture('wheat_cut');
+                    this.currentSprite.loadTexture('wheat_cut_' + this.getRandomNumber(3));
                     break;
                 case TileState.OBSTACLE:
-                    this.currentSprite.loadTexture('obstacle');
+                    this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
                     break;
             }
             this.currentState = newState;
         }
+    }
+    getRandomNumber(range) {
+        return Math.floor(Math.random() * range) + 1;
     }
 }
 class JoinGameMenu {

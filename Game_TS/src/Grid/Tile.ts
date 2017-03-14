@@ -51,16 +51,19 @@ class Tile {
                     this.currentSprite.loadTexture('');
                     break;
                 case TileState.WHEAT:
-                    this.currentSprite.loadTexture('wheat_1');
+                    this.currentSprite.loadTexture('wheat_' + this.getRandomNumber(5));
                     break;
                 case TileState.CUT:
-                    this.currentSprite.loadTexture('wheat_cut');
+                    this.currentSprite.loadTexture('wheat_cut_' + this.getRandomNumber(3));
                     break;
                 case TileState.OBSTACLE:
-                    this.currentSprite.loadTexture('obstacle');
+                    this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
                     break;
             }
             this.currentState = newState;
         }
+    }
+    private getRandomNumber(range: number) {
+        return Math.floor(Math.random() * range) + 1;
     }
 }
