@@ -8,10 +8,11 @@ class Tile {
     private game: Phaser.Game;
     private xPos: number;
     private yPos: number;
-    private tileSize: number;
     private spriteSize: number;
-    private currentSprite: Phaser.Sprite;
 
+    public tileSize: number;
+
+    private currentSprite: Phaser.Sprite;
     private currentState: TileState;
 
     constructor(_game: Phaser.Game, _x: number, _y: number)
@@ -32,11 +33,11 @@ class Tile {
     }
     // world X coordinates
     public getX() {
-        return this.xPos * this.tileSize;
+        return this.xPos * this.tileSize +(this.tileSize/2);
     }
     // world Y coordinates
     public getY() {
-        return this.yPos * this.tileSize;
+        return this.yPos * this.tileSize +(this.tileSize / 2);
     }
     // is occupied by wheat
     public GetState() {

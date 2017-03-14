@@ -4,7 +4,7 @@
     gridHeight: number;
     Tiles: Tile[][];
     space: Phaser.Key;
-
+    tilewidth: number;
     constructor(_game: Phaser.Game) {
         this.game = _game;
     }
@@ -22,9 +22,23 @@
                 this.Tiles[x][y] = newTile;
             }
         }
+        this.tilewidth = this.Tiles[0][0].tileSize;
     }
 
     public getTile(_x: number, _y: number) {
         return this.Tiles[_x][_y];
+    }
+    // get tile at player postion +/- directionX and directionY
+    public getTileAtPlayer(playerX: number, playerY: number, directionX: number, directionY: number): Tile{
+        playerX /= this.tilewidth + directionX;
+        playerY /= this.tilewidth + directionY;
+        if ((playerX > this.Tiles.length - 1 || playerX < 0) || (playerY > this.Tiles[0].length - 1 || playerY < 0)) {
+            return null;
+        }
+        else
+        {
+            return this.Tiles[playerX][playerY];
+        }
+        
     }
 }
