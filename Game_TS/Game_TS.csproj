@@ -33,7 +33,9 @@
     <TypeScriptCompile Include="lib\p2.d.ts" />
     <TypeScriptCompile Include="lib\phaser.d.ts" />
     <TypeScriptCompile Include="lib\pixi.d.ts" />
-    <TypeScriptCompile Include="src\Enemy\Enemy.ts" />
+    <TypeScriptCompile Include="src\Grid\Grid.ts" />
+    <TypeScriptCompile Include="src\Grid\Tile.ts" />
+    <TypeScriptCompile Include="src\JoinGameMenu.ts" />
     <TypeScriptCompile Include="tsd\socket.io.d.ts" />
   </ItemGroup>
   <ItemGroup>
