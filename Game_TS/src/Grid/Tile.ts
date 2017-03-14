@@ -1,20 +1,22 @@
 ﻿class Tile {
-    public hasGrass: Boolean = true;
+    private hasWheat: Boolean = true;
     private game: Phaser.Game;
     private xPos: number;
     private yPos: number;
-    private cutGrass: Phaser.Sprite;
-    private grass: Phaser.Sprite;
     private tileSize: number;
+    private currentSprite: Phaser.Sprite;
+
     constructor(_game: Phaser.Game, _x: number, _y: number)
     {
         this.game = _game;
-        this.xPos = _x ;
+        this.xPos = _x;
         this.yPos = _y;
-        this.tileSize = this.game.cache.getImage('grass').width;
-        
-        this.cutGrass = this.game.add.sprite(this.xPos * this.tileSize, this.yPos * this.tileSize, 'cutGrass');
-        this.grass = this.game.add.sprite(this.xPos * this.tileSize, this.yPos * this.tileSize, 'grass');
+        this.tileSize = this.game.cache.getImage('wheat').width;
+
+        this.currentSprite = new Phaser.Sprite(this.game, this.xPos * this.tileSize, this.yPos * this.tileSize);
+        this.currentSprite.loadTexture('wheat');
+
+        this.game.add.existing(this.currentSprite);
     }
     // world X coordinates
     public getX() {
@@ -24,17 +26,19 @@
     public getY() {
         return this.yPos * this.tileSize;
     }
+    // is occupied by wheat
+    public HasWheat() {
+        return this.hasWheat;
+    }
     //Set whether or not the grass is cut
-    public setTile(_hasGrass: Boolean) {
-        if (_hasGrass != this.hasGrass) {
-            this.hasGrass = _hasGrass;
-            if (this.hasGrass) {
-                this.grass = this.game.add.sprite(this.xPos * this.tileSize, this.yPos * this.tileSize, 'grass');
-                this.cutGrass.destroy(true);
+    public setTile(_hasWheat: Boolean) {
+        if (_hasWheat != this.hasWheat) {
+            this.hasWheat = _hasWheat;
+            if (this.hasWheat) {
+                this.currentSprite.loadTexture('wheat');
             }
             else {
-                this.cutGrass = this.game.add.sprite(this.xPos * this.tileSize, this.yPos * this.tileSize, 'cutGrass');
-                this.grass.destroy(true);
+                this.currentSprite.loadTexture('wheat_cut');
             }
         }
     }

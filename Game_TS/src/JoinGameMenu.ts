@@ -2,13 +2,13 @@
     private joinButton: Phaser.Button;
     private userInput: HTMLElement;
 
-    constructor(game: Phaser.Game) {
-        let xPos = (document.body.clientWidth / 2) - (game.cache.getImage("button_join").width / 2);
+    constructor(_game: Phaser.Game) {
+        let xPos = (document.body.clientWidth / 2) - (_game.cache.getImage("button_join").width / 2);
         let yPos = document.body.clientHeight / 2;
-        this.joinButton = game.add.button(xPos, yPos, 'button_join', this.joinGame, this);
+        this.joinButton = _game.add.button(xPos, yPos, 'button_join', this.joinGame, this);
 
         this.createUsernameElement();
-        document.body.insertBefore(this.userInput, game.canvas);
+        document.body.insertBefore(this.userInput, _game.canvas);
 
         SOCKET.on("player_joined", this.joinButton.destroy);
     }
@@ -22,7 +22,7 @@
         this.userInput.style.display = "block";
     }
 
-    private joinGame(ip?: string) {
+    private joinGame(_ip?: string) {
         //SOCKET = io.connect(ip);
         SOCKET.emit("player_joining", document.getElementsByTagName("input")[0].value);
         this.destroy();

@@ -26,7 +26,7 @@ io.sockets.on("connection", function (socket) {
     console.log("Connected:  %s sockets connected", connections.length);
 
     //Disconnect.
-    socket.on("disconnect", function (data) {
+    socket.on("disconnect", function (dcData) {
         connections.splice(connections.indexOf(socket), 1);
 		if(isPlayer(socket)){
 			var player = getPlayerObjectBySocket(socket);
@@ -48,7 +48,10 @@ io.sockets.on("connection", function (socket) {
 		console.log(moveData.player + " moved to tile " + moveData.x + " " + moveData.y);
 	});
 	
-	
+	socket.on("wheat_cut", function (cutData){
+		io.sockets.emit("wheat_cutted", cutData);
+		console.log(cutData.tile + " was cut down");
+	});
 });
 
 //Get the desired player object by its designated socket.
@@ -68,5 +71,4 @@ function isPlayer(key){
 		}
 	}return false;
 }
-
 
