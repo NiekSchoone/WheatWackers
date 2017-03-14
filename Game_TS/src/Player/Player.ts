@@ -1,5 +1,4 @@
-﻿/// <reference path="tempgrid.ts" />
-class Player extends Phaser.Sprite
+﻿class Player extends Phaser.Sprite
 {
     game: Phaser.Game
     speed: number = 1000;
@@ -16,30 +15,30 @@ class Player extends Phaser.Sprite
         game.physics.arcade.enable(this);
 
         this.cursors = game.input.keyboard.createCursorKeys();
-        
+        this.cursors.up.onDown.add(this.moveUpwards);
+        this.cursors.down.onDown.add(this.moveDownwards);
+        this.cursors.left.onDown.add(this.moveLeft);
+        this.cursors.right.onDown.add(this.moveRight);
     }
 
-    update()
+    moveUpwards()
     {
-        if (this.moving == false)
-        {
-            if (this.cursors.left.isDown)
-            {
-                this.moveTowards(this.x - 100, this.y);
-            }
-            if (this.cursors.right.isDown)
-            {
-                this.moveTowards(this.x + 100, this.y);
-            }
-            if (this.cursors.down.isDown)
-            {
-                this.moveTowards(this.x, this.y + 100);
-            }
-            if (this.cursors.up.isDown)
-            {
-                this.moveTowards(this.x, this.y - 100);
-            }
-        }
+        this.moveTowards(this.x, this.y - 100);
+    }
+
+    moveDownwards()
+    {
+        this.moveTowards(this.x, this.y + 100); 
+    }
+
+    moveLeft()
+    {
+        this.moveTowards(this.x - 100, this.y);
+    }
+
+    moveRight()
+    {
+        this.moveTowards(this.x + 100, this.y);
     }
 
                   //100000 - this.speed * 100
