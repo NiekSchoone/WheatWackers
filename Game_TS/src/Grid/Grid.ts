@@ -30,8 +30,8 @@
     }
     // get tile at player coordinate +/- directionX and directionY on grid coordinate 
     public getTileAtPlayer(playerX: number, playerY: number, directionX: number, directionY: number): Tile{
-        playerX /= this.tilewidth + directionX;
-        playerY /= this.tilewidth + directionY;
+        playerX = (playerX / this.tilewidth) + directionX;
+        playerY = (playerY / this.tilewidth) + directionY;
         if ((playerX > this.Tiles.length - 1 || playerX < 0) || (playerY > this.Tiles[0].length - 1 || playerY < 0)) {
             return null;
         }
