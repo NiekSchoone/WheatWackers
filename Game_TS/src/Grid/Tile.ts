@@ -3,7 +3,7 @@
     private game: Phaser.Game;
     private xPos: number;
     private yPos: number;
-    private tileSize: number;
+    public tileSize: number;
     private currentSprite: Phaser.Sprite;
 
     constructor(_game: Phaser.Game, _x: number, _y: number)
@@ -20,11 +20,11 @@
     }
     // world X coordinates
     public getX() {
-        return this.xPos * this.tileSize;
+        return this.xPos * (this.tileSize / 2);
     }
     // world Y coordinates
     public getY() {
-        return this.yPos * this.tileSize;
+        return this.yPos * (this.tileSize/2);
     }
     // is occupied by wheat
     public HasWheat() {
