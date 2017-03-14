@@ -20,11 +20,11 @@
     }
     // world X coordinates
     public getX() {
-        return this.xPos * (this.tileSize / 2);
+        return this.xPos * this.tileSize - (this.tileSize/2);
     }
     // world Y coordinates
     public getY() {
-        return this.yPos * (this.tileSize/2);
+        return this.yPos * this.tileSize / 2 - (this.tileSize / 2);
     }
     // is occupied by wheat
     public HasWheat() {
