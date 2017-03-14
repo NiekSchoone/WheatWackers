@@ -1,19 +1,29 @@
 ﻿class Player extends Phaser.Sprite
 {
+    public username: string;
+
     game: Phaser.Game;
     grid: Grid;
     speed: number = 1000;
     cursors: Phaser.CursorKeys;
     moving: boolean = false;
 
-    constructor(game: Phaser.Game, grid : Grid)
+    moveDistance: number;
+
+    constructor(game: Phaser.Game, grid : Grid, username : string)
     {
         super(game, 0, 0, "failguy");
+
+        this.grid = grid;
         this.position.set(grid.getTile(0, 0).getX(), grid.getTile(0, 0).getY());
         this.anchor.setTo(0.5);
-        this.scale.setTo(0.5);
+
+        this.moveDistance = this.grid.tilewidth;
+        console.log(this.moveDistance);
+        this.scale.setTo(1);
         this.game = game;
-        this.grid = grid; 
+
+        this.username = username; 
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
 
@@ -26,28 +36,32 @@
 
     moveUpwards()
     {
-        this.moveTowards(this.x, this.y - 100);
+        this.moveTowards(this.x, this.y - this.moveDistance);
     }
 
     moveDownwards()
     {
-        this.moveTowards(this.x, this.y + 100); 
+        this.moveTowards(this.x, this.y + this.moveDistance); 
     }
 
     moveLeft()
     {
-        this.moveTowards(this.x - 100, this.y);
+        this.moveTowards(this.x - this.moveDistance, this.y);
     }
 
     moveRight()
     {
-        this.moveTowards(this.x + 100, this.y);
+        if (this.grid.getTileAtPlayer(this.x, this.y, 1 ,0 ))
+        {
+               this.moveTowards(this.x + this.moveDistance, this.y);
+        }
+        
     }
 
     moveTowards(_x: number, _y: number)
     {
         this.moving = true;
-        var tween : Phaser.Tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
+        var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2}, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
         tween.onComplete.add(this.onComplete, this);
     }
 
