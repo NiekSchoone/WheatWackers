@@ -28,16 +28,16 @@
     public getTile(_x: number, _y: number) {
         return this.Tiles[_x][_y];
     }
-
-    public getTileAtPlayer(_x: number, _y: number, directionX: number, directionY: number): Tile{
-        _x /= this.tilewidth;
-        _y /= this.tilewidth;
-        if ((_x > this.Tiles.length - 1 || _x < 0) || (_y > this.Tiles[0].length - 1 || _y < 0)) {
+    // get tile at player postion +/- directionX and directionY
+    public getTileAtPlayer(playerX: number, playerY: number, directionX: number, directionY: number): Tile{
+        playerX /= this.tilewidth + directionX;
+        playerY /= this.tilewidth + directionY;
+        if ((playerX > this.Tiles.length - 1 || playerX < 0) || (playerY > this.Tiles[0].length - 1 || playerY < 0)) {
             return null;
         }
         else
         {
-            return this.Tiles[_x][_y];
+            return this.Tiles[playerX][playerY];
         }
         
     }
