@@ -18,7 +18,7 @@
             this.Tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
-                newTile.setTile(true);
+                newTile.setTile(1 as TileState);
                 this.Tiles[x][y] = newTile;
             }
         }
