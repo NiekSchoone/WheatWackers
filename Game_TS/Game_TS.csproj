@@ -23,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
-    <Content Include="assets\TestingAssets\grass.jpg" />
     <Content Include="index.html" />
     <Content Include="lib\phaser.js" />
     <Content Include="lib\phaser.min.js" />
@@ -37,7 +36,6 @@
     <TypeScriptCompile Include="src\Grid\Grid.ts" />
     <TypeScriptCompile Include="src\Grid\Tile.ts" />
     <TypeScriptCompile Include="src\JoinGameMenu.ts" />
-    <TypeScriptCompile Include="src\Player\Player.ts" />
     <TypeScriptCompile Include="tsd\socket.io.d.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -48,7 +46,9 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="assets\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>
