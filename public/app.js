@@ -6,19 +6,19 @@ class Game {
         });*/
     }
     preload() {
-        this.game.load.image('background', 'Images/Level/background.jpg');
-        this.game.load.image('wheat_1', 'Images/Level/wheat_01.png');
-        this.game.load.image('wheat_2', 'Images/Level/wheat_02.png');
-        this.game.load.image('wheat_3', 'Images/Level/wheat_03.png');
-        this.game.load.image('wheat_4', 'Images/Level/wheat_04.png');
-        this.game.load.image('wheat_5', 'Images/Level/wheat_05.png');
-        this.game.load.image('wheat_cut_1', 'Images/Level/wheat_cut_01.png');
-        this.game.load.image('wheat_cut_2', 'Images/Level/wheat_cut_02.png');
-        this.game.load.image('wheat_cut_3', 'Images/Level/wheat_cut_03.png');
-        this.game.load.image('obstacle_1', 'Images/Level/obstacle_01.png');
-        this.game.load.image('obstacle_2', 'Images/Level/obstacle_02.png');
-        this.game.load.image('obstacle_3', 'Images/Level/obstacle_03.png');
-        this.game.load.image('button_join', 'Images/Level/button_join.png');
+        this.game.load.image('background', 'assets/images/level/background.jpg');
+        this.game.load.image('wheat_1', 'assets/images/level/wheat_01.png');
+        this.game.load.image('wheat_2', 'assets/images/level/wheat_02.png');
+        this.game.load.image('wheat_3', 'assets/images/level/wheat_03.png');
+        this.game.load.image('wheat_4', 'assets/images/level/wheat_04.png');
+        this.game.load.image('wheat_5', 'assets/images/level/wheat_05.png');
+        this.game.load.image('wheat_cut_1', 'assets/images/level/wheat_cut_01.png');
+        this.game.load.image('wheat_cut_2', 'assets/images/level/wheat_cut_02.png');
+        this.game.load.image('wheat_cut_3', 'assets/images/level/wheat_cut_03.png');
+        this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
+        this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
+        this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
+        this.game.load.image('button_join', 'assets/images/level/button_join.png');
     }
     create() {
         this.background = new Phaser.TileSprite(this.game, 0, 0, 864, 864, 'background');
@@ -150,6 +150,7 @@ class JoinGameMenu {
         this.userInput = null;
     }
 }
+/// <reference path="tempgrid.ts" />
 class Player extends Phaser.Sprite {
     constructor(game) {
         super(game, 0, 0, "failguy");
