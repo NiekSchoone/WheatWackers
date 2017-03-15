@@ -14,12 +14,12 @@
         this.gridHeight = _gridHeight;
         this.Tiles = [];
 
-        for (let y = 0; y < this.gridWidth; y++){
-            this.Tiles[y] = [];
-            for (let x = 0; x < this.gridHeight; x++) {
+        for (let x = 0; x < this.gridWidth; x++){
+            this.Tiles[x] = [];
+            for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
                 newTile.setTile((Math.floor(Math.random() * 4)) as TileState);
-                this.Tiles[y][x] = newTile;
+                this.Tiles[x][y] = newTile;
             }
         }
         this.tilewidth = this.Tiles[0][0].tileSize;
@@ -29,14 +29,13 @@
         return this.Tiles[_x][_y];
     }
     // get tile at player coordinate +/- directionX and directionY on grid coordinate 
-    public getTileAtPlayer(playerX: number, playerY: number, directionX: number, directionY: number): Tile{
+    public getTileAtPlayer(playerX: number, playerY: number, directionX: number, directionY: number): Tile {
         playerX = (playerX / this.tilewidth) + directionX;
         playerY = (playerY / this.tilewidth) + directionY;
         if ((playerX > this.Tiles.length - 1 || playerX < 0) || (playerY > this.Tiles[0].length - 1 || playerY < 0)) {
             return null;
         }
-        else
-        {
+        else {
             return this.Tiles[playerX][playerY];
         }
         
