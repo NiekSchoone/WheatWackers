@@ -25,14 +25,17 @@ io.sockets.on("connection", function (socket) {
     connections.push(socket);
     console.log("Connected:  %s sockets connected", connections.length);
 	
+	console.log(players);
+	
     //Disconnect.
     socket.on("disconnect", function (dcData) {
-        connections.splice(connections.indexOf(socket), 1);
-		if(isPlayer(socket)){
+		if(isPlayer(socket.id)){
 			var player = getPlayerObjectBySocket(socket.id);
+			socket.broadcast.emit("player_disconnected", player.username);
 			console.log(player.username + " has disconnected");
 			players.splice(player, 1);
 		}
+		connections.splice(connections.indexOf(socket), 1);
         console.log("disconnected: %s sockets remaining", connections.length);
     });
 	

@@ -22,14 +22,16 @@
     }
 
     createOpponent(_username: string) {
-        let newOpponent = new Humanoid(this.game);
+        let newOpponent = new Humanoid(this.game, this.grid, _username);
         this.opponents.push(newOpponent);
+        this.game.add.existing(newOpponent);
         console.log(_username + " joined as a new opponent");
     }
 
     moveOpponent(moveData: any) {
-        let opponent = moveData.player;
+        let opponent = this.getOpponentByName(moveData.player);
         opponent.moveTowards(moveData.x, moveData.y);
+        console.log("am I calling move towards?");
     }
 
     createJoinWindow() {
@@ -50,8 +52,24 @@
         SOCKET.on("player_joined", function (data) {
             client.createOpponent(data);
         });
-        SOCKET.on("player_move", function (data) {
+        SOCKET.on("player_disconnected", function (player) {
+            let playerToRemove = client.getOpponentByName(player);
+            client.opponents.splice(0, 1, playerToRemove);
+            playerToRemove.destroy();
+            console.log(client.opponents);
+        });
+
+        SOCKET.on("player_moving", function (data) {
+            console.log("Get gud?");
             client.moveOpponent(data);
         });
+    }
+
+    getOpponentByName(username: string) {
+        for (let i = 0; i < this.opponents.length; i++) {
+            if (this.opponents[i].username === username) {
+                return this.opponents[i];
+            }
+        }
     }
 }

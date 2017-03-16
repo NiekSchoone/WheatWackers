@@ -26,12 +26,6 @@ class Game {
         this.grid = new Grid(this.game);
         this.grid.generateGrid(8, 8);
         this.playerManager = new PlayerManager(this.game, this.grid);
-        //this.joinMenu = new JoinGameMenu(this.game);
-        /*
-        this.player = new Player(this.game, this.grid, "username");
-        this.game.add.existing(this.player);
-        this.players.push(this.player);
-        */
     }
 }
 window.onload = () => {
@@ -160,14 +154,19 @@ class JoinGameMenu {
     }
 }
 class Humanoid extends Phaser.Sprite {
-    constructor(game) {
-        super(game, 0, 0);
+    constructor(game, grid, username) {
+        super(game, 0, 0, "failguy");
         this.speed = 1000;
+        this.username = username;
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
+        this.grid = grid;
+        this.anchor.setTo(0.5);
+        this.cursorkeys = new Phaser.Key(game, 32);
     }
     moveTowards(x, y) {
-        var tween = this.game.add.tween(this.body).to({ x: x - this.width / 2, y: y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, x, y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
+        var tile = this.grid.getTile(x, y);
+        var tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, x, y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
     }
 }
 class Player extends Phaser.Sprite {
@@ -175,11 +174,12 @@ class Player extends Phaser.Sprite {
         super(game, 0, 0, "failguy");
         this.speed = 1000;
         this.moving = false;
+        this.cutting = false;
         this.cutTime = 1000;
         this.game = game;
         this.grid = grid;
         this.username = username;
-        this.position.set(grid.getTile(5, 5).getX(), grid.getTile(5, 5).getY());
+        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(0, 0).getY());
         this.anchor.setTo(0.5);
         this.moveDistance = this.grid.tileSize;
         this.scale.setTo(1);
@@ -188,7 +188,7 @@ class Player extends Phaser.Sprite {
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this, Phaser.Camera.FOLLOW_LOCKON);
         game.world.setBounds(0, 0, 10920, 10080);
-        game.camera.setSize(1920, 1080);
+        game.camera.focusOnXY(this.x, this.y);
     }
     update() {
         if (this.cursors.up.isDown) {
@@ -202,6 +202,11 @@ class Player extends Phaser.Sprite {
         }
         else if (this.cursors.right.isDown) {
             this.moveRight();
+        }
+        if (this.cutting == true) {
+            if (this.moving == true) {
+                this.cutting = false;
+            }
         }
     }
     moveUpwards() {
@@ -235,16 +240,20 @@ class Player extends Phaser.Sprite {
                 this.moving = true;
                 var tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
+                SOCKET.emit("player_move", { player: this.username, x: tile.xPos, y: tile.yPos });
             }
             else if (tileState == TileState.WHEAT) {
-                this.moving = true;
+                this.cutting = true;
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
     }
     cutWheat(tile) {
-        tile.setTile(TileState.CUT);
-        this.onComplete();
+        if (this.cutting == true) {
+            tile.setTile(TileState.CUT);
+            this.onComplete();
+            this.cutting = false;
+        }
     }
     onComplete() {
         this.moving = false;
@@ -263,13 +272,15 @@ class PlayerManager {
         this.game.add.existing(this.player);
     }
     createOpponent(_username) {
-        let newOpponent = new Humanoid(this.game);
+        let newOpponent = new Humanoid(this.game, this.grid, _username);
         this.opponents.push(newOpponent);
+        this.game.add.existing(newOpponent);
         console.log(_username + " joined as a new opponent");
     }
     moveOpponent(moveData) {
-        let opponent = moveData.player;
+        let opponent = this.getOpponentByName(moveData.player);
         opponent.moveTowards(moveData.x, moveData.y);
+        console.log("am I calling move towards?");
     }
     createJoinWindow() {
         let joinWindow = new JoinGameMenu(this.game);
@@ -288,9 +299,23 @@ class PlayerManager {
         SOCKET.on("player_joined", function (data) {
             client.createOpponent(data);
         });
-        SOCKET.on("player_move", function (data) {
+        SOCKET.on("player_disconnected", function (player) {
+            let playerToRemove = client.getOpponentByName(player);
+            client.opponents.splice(0, 1, playerToRemove);
+            playerToRemove.destroy();
+            console.log(client.opponents);
+        });
+        SOCKET.on("player_moving", function (data) {
+            console.log("Get gud?");
             client.moveOpponent(data);
         });
+    }
+    getOpponentByName(username) {
+        for (let i = 0; i < this.opponents.length; i++) {
+            if (this.opponents[i].username === username) {
+                return this.opponents[i];
+            }
+        }
     }
 }
 //# sourceMappingURL=app.js.map
