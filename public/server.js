@@ -24,32 +24,37 @@ io.sockets.on("connection", function (socket) {
     //Push the connection.
     connections.push(socket);
     console.log("Connected:  %s sockets connected", connections.length);
-
+	
     //Disconnect.
     socket.on("disconnect", function (dcData) {
         connections.splice(connections.indexOf(socket), 1);
 		if(isPlayer(socket)){
-			var player = getPlayerObjectBySocket(socket);
+			var player = getPlayerObjectBySocket(socket.id);
 			console.log(player.username + " has disconnected");
 			players.splice(player, 1);
 		}
         console.log("disconnected: %s sockets remaining", connections.length);
     });
-
-    //Player joins the game.
-    socket.on("player_joining", function (username) {
-		players.push({socket: socket, username: username});
-		io.sockets.emit("player_joined", username);
-		console.log(username + " has joined the game");
-    });
 	
-	socket.on("player_move", function (moveData) {
-		io.sockets.emit("player_moving", moveData);
-		console.log(moveData.player + " moved to tile " + moveData.x + " " + moveData.y);
+	socket.on("join_ready", function(){
+		socket.emit("join_game");
+		socket.emit("init_opponents", players);
 	});
 	
+	socket.on("joined", function(username){
+		var player = {socket:socket.id, username:username};
+		players.push(player);
+		socket.emit("init_player", username);
+		socket.broadcast.emit("player_joined", username);
+		console.log("socket: " + player.socket + " has joined the game as " + player.username);
+	});
+	
+	socket.on("player_move", function (moveData) {
+		socket.broadcast.emit("player_moving", moveData);
+		console.log(moveData.player + " moved to tile " + moveData.x + " " + moveData.y);
+	});
 	socket.on("wheat_cut", function (cutData){
-		io.sockets.emit("wheat_cutted", cutData);
+		socket.broadcast.emit("wheat_cutted", cutData);
 		console.log(cutData.tile + " was cut down");
 	});
 });

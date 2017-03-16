@@ -21,7 +21,7 @@
     }
 
     private joinGame(_ip?: string) {
-        SOCKET.emit("player_joining", document.getElementsByTagName("input")[0].value);
+        SOCKET.emit("joined", document.getElementsByTagName("input")[0].value);
         this.destroy();
     }
 
