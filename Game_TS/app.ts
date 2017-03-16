@@ -10,7 +10,7 @@ class Game {
     private background: Phaser.TileSprite;
 
     constructor() {
-        this.game = new Phaser.Game(1200, 800, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
+        this.game = new Phaser.Game(1920, 1080, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
 
         /*SOCKET.on("player_joined", function (data) {
             console.log(data + " has joined");
@@ -40,7 +40,7 @@ class Game {
         this.game.add.existing(this.background);
 
         this.grid = new Grid(this.game);
-        this.grid.generateGrid(4, 4);
+        this.grid.generateGrid(40, 40);
 
         this.player = new Player(this.game, this.grid, "username");
         this.game.add.existing(this.player);
