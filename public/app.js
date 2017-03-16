@@ -1,9 +1,7 @@
 class Game {
     constructor() {
         this.game = new Phaser.Game(document.body.clientWidth, document.body.clientHeight, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
-        /*SOCKET.on("player_joined", function (data) {
-            console.log(data + " has joined");
-        });*/
+        SOCKET = io.connect();
     }
     preload() {
         this.game.load.image('background', 'assets/images/level/background.jpg');
@@ -18,16 +16,28 @@ class Game {
         this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
         this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
         this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
-        this.game.load.image('button_join', 'assets/images/level/button_join.png');
+        this.game.load.image('button_join', 'assets/images/ui/button_join.png');
     }
     create() {
-        this.background = new Phaser.TileSprite(this.game, 0, 0, 864, 864, 'background');
+        this.background = new Phaser.TileSprite(this.game, 0, 0, 1000, 1000, 'background');
         this.background.texture.width = 864;
         this.background.texture.height = 864;
         this.game.add.existing(this.background);
         this.grid = new Grid(this.game);
-        this.grid.generateGrid(6, 6);
-        this.player = new Player(this.game);
+        this.grid.generateGrid(8, 12);
+        this.joinMenu = new JoinGameMenu(this.game);
+        let _client = this;
+        SOCKET.on("player_joined", function (data) {
+            let newPlayer = new Player(_client.game, _client.grid, data);
+            _client.game.add.existing(newPlayer);
+            //_client.players.push(newPlayer);
+            console.log(newPlayer);
+        });
+        /*
+        this.player = new Player(this.game, this.grid, "username");
+        this.game.add.existing(this.player);
+        this.players.push(this.player);
+        */
     }
 }
 window.onload = () => {
@@ -40,31 +50,38 @@ class Grid {
     generateGrid(_gridWidth, _gridHeight) {
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
-        this.Tiles = [];
-        for (let y = 0; y < this.gridWidth; y++) {
-            this.Tiles[y] = [];
-            for (let x = 0; x < this.gridHeight; x++) {
+        this.tiles = [];
+        for (let x = 0; x < this.gridWidth; x++) {
+            this.tiles[x] = [];
+            for (let y = 0; y < this.gridHeight; y++) {
                 let newTile = new Tile(this.game, x, y);
                 newTile.setTile((Math.floor(Math.random() * 4)));
-                this.Tiles[y][x] = newTile;
+                this.tiles[x][y] = newTile;
             }
         }
-        this.tilewidth = this.Tiles[0][0].tileSize;
+        this.tileSize = this.tiles[0][0].tileSize;
     }
-    getTile(_x, _y) {
-        return this.Tiles[_x][_y];
-    }
-    // get tile at player postion +/- directionX and directionY
+    // get tile at player coordinate +/- directionX and directionY on grid coordinate 
     getTileAtPlayer(playerX, playerY, directionX, directionY) {
-        playerX /= this.tilewidth + directionX;
-        playerY /= this.tilewidth + directionY;
-        if ((playerX > this.Tiles.length - 1 || playerX < 0) || (playerY > this.Tiles[0].length - 1 || playerY < 0)) {
+        playerX -= (this.tileSize / 2);
+        playerX = playerX / this.tileSize;
+        playerX += directionX;
+        playerY -= (this.tileSize / 2);
+        playerY = playerY / this.tileSize;
+        playerY += directionY;
+        if ((playerX > this.tiles.length - 1 || playerX < 0) || (playerY > this.tiles[0].length - 1 || playerY < 0)) {
             return null;
         }
         else {
-            return this.Tiles[playerX][playerY];
+            return this.tiles[playerX][playerY];
         }
     }
+    // get tile at grid coordinate 
+    getTile(_x, _y) {
+        return this.tiles[_x][_y];
+    }
+    getGridWidth() { return this.gridWidth; }
+    getGridHeight() { return this.gridHeight; }
 }
 var TileState;
 (function (TileState) {
@@ -86,22 +103,10 @@ class Tile {
         this.currentState = TileState.NONE;
         this.game.add.existing(this.currentSprite);
     }
-    // world X coordinates
-    getX() {
-        return this.xPos * this.tileSize + (this.tileSize / 2);
-    }
-    // world Y coordinates
-    getY() {
-        return this.yPos * this.tileSize + (this.tileSize / 2);
-    }
-    // is occupied by wheat
-    GetState() {
-        return this.currentState;
-    }
     //Set whether or not the grass is cut
-    setTile(newState) {
-        if (newState != this.currentState) {
-            switch (newState) {
+    setTile(_newState) {
+        if (_newState != this.currentState) {
+            switch (_newState) {
                 case TileState.NONE:
                     this.currentSprite.loadTexture('');
                     break;
@@ -115,11 +120,23 @@ class Tile {
                     this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
                     break;
             }
-            this.currentState = newState;
+            this.currentState = _newState;
         }
     }
-    getRandomNumber(range) {
-        return Math.floor(Math.random() * range) + 1;
+    getRandomNumber(_range) {
+        return Math.floor(Math.random() * _range) + 1;
+    }
+    // world X coordinates
+    getX() {
+        return this.xPos * this.tileSize + (this.tileSize / 2);
+    }
+    // world Y coordinates
+    getY() {
+        return this.yPos * this.tileSize + (this.tileSize / 2);
+    }
+    // is occupied by wheat
+    getState() {
+        return this.currentState;
     }
 }
 class JoinGameMenu {
@@ -129,7 +146,6 @@ class JoinGameMenu {
         this.joinButton = _game.add.button(xPos, yPos, 'button_join', this.joinGame, this);
         this.createUsernameElement();
         document.body.insertBefore(this.userInput, _game.canvas);
-        SOCKET.on("player_joined", this.joinButton.destroy);
     }
     createUsernameElement() {
         this.userInput = document.createElement('input');
@@ -150,43 +166,56 @@ class JoinGameMenu {
         this.userInput = null;
     }
 }
-/// <reference path="tempgrid.ts" />
 class Player extends Phaser.Sprite {
-    constructor(game) {
-        super(game, 0, 0, "failguy");
+    constructor(_game, _grid, username) {
+        super(_game, 0, 0);
         this.speed = 1000;
         this.moving = false;
-        this.position.set(0, 0);
+        this.game = _game;
+        this.grid = _grid;
+        this.loadTexture('button_join');
+        this.position.set(this.grid.getTile(0, 0).getX(), this.grid.getTile(0, 0).getY());
         this.anchor.setTo(0.5);
-        this.scale.setTo(0.5);
-        this.game = game;
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        game.physics.arcade.enable(this);
-        this.cursors = game.input.keyboard.createCursorKeys();
+        this.moveDistance = this.grid.tileSize;
+        this.scale.setTo(1);
+        this.username = username;
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+        this.game.physics.arcade.enable(this);
+        this.cursors = this.game.input.keyboard.createCursorKeys();
+        this.cursors.up.onDown.add(this.moveUpwards, this);
+        this.cursors.down.onDown.add(this.moveDownwards, this);
+        this.cursors.left.onDown.add(this.moveLeft, this);
+        this.cursors.right.onDown.add(this.moveRight, this);
     }
-    update() {
-        if (this.moving == false) {
-            if (this.cursors.left.isDown) {
-                this.moveTowards(this.x - 100, this.y);
+    moveUpwards() {
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, -1);
+        this.moveTowards(this.x, this.y - this.moveDistance, tile);
+    }
+    moveDownwards() {
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 1);
+        this.moveTowards(this.x, this.y + this.moveDistance, tile);
+    }
+    moveLeft() {
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, -1, 0);
+        this.moveTowards(this.x - this.moveDistance, this.y, tile);
+    }
+    moveRight() {
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, 1, 0);
+        this.moveTowards(this.x + this.moveDistance, this.y, tile);
+    }
+    moveTowards(_x, _y, tile) {
+        if (tile) {
+            var tileState = tile.getState();
+            if (tileState == TileState.CUT || tileState == TileState.NONE) {
+                this.moving = true;
+                var tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
+                tween.onComplete.add(this.onComplete, this);
             }
-            if (this.cursors.right.isDown) {
-                this.moveTowards(this.x + 100, this.y);
-            }
-            if (this.cursors.down.isDown) {
-                this.moveTowards(this.x, this.y + 100);
-            }
-            if (this.cursors.up.isDown) {
-                this.moveTowards(this.x, this.y - 100);
+            else if (true) {
             }
         }
     }
-    //100000 - this.speed * 100
-    moveTowards(_x, _y) {
-        //console.log("x: " + this.x + " y: " + this.y);
-        console.log(this.width);
-        this.moving = true;
-        var tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
-        tween.onComplete.add(this.onComplete, this);
+    cutWheat() {
     }
     onComplete() {
         this.moving = false;
