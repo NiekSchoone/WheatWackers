@@ -24,15 +24,9 @@ class Game {
         this.background.texture.height = 864;
         this.game.add.existing(this.background);
         this.grid = new Grid(this.game);
-        this.grid.generateGrid(8, 12);
-        this.joinMenu = new JoinGameMenu(this.game);
-        let _client = this;
-        SOCKET.on("player_joined", function (data) {
-            let newPlayer = new Player(_client.game, _client.grid, data);
-            _client.game.add.existing(newPlayer);
-            //_client.players.push(newPlayer);
-            console.log(newPlayer);
-        });
+        this.grid.generateGrid(8, 8);
+        this.playerManager = new PlayerManager(this.game, this.grid);
+        //this.joinMenu = new JoinGameMenu(this.game);
         /*
         this.player = new Player(this.game, this.grid, "username");
         this.game.add.existing(this.player);
@@ -156,8 +150,7 @@ class JoinGameMenu {
         this.userInput.style.display = "block";
     }
     joinGame(_ip) {
-        //SOCKET = io.connect(ip);
-        SOCKET.emit("player_joining", document.getElementsByTagName("input")[0].value);
+        SOCKET.emit("joined", document.getElementsByTagName("input")[0].value);
         this.destroy();
     }
     destroy() {
@@ -166,59 +159,138 @@ class JoinGameMenu {
         this.userInput = null;
     }
 }
+class Humanoid extends Phaser.Sprite {
+    constructor(game) {
+        super(game, 0, 0);
+        this.speed = 1000;
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.physics.arcade.enable(this);
+    }
+    moveTowards(x, y) {
+        var tween = this.game.add.tween(this.body).to({ x: x - this.width / 2, y: y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, x, y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
+    }
+}
 class Player extends Phaser.Sprite {
-    constructor(_game, _grid, username) {
-        super(_game, 0, 0);
+    constructor(game, grid, username) {
+        super(game, 0, 0, "failguy");
         this.speed = 1000;
         this.moving = false;
-        this.game = _game;
-        this.grid = _grid;
-        this.loadTexture('button_join');
-        this.position.set(this.grid.getTile(0, 0).getX(), this.grid.getTile(0, 0).getY());
+        this.cutTime = 1000;
+        this.game = game;
+        this.grid = grid;
+        this.username = username;
+        this.position.set(grid.getTile(5, 5).getX(), grid.getTile(5, 5).getY());
         this.anchor.setTo(0.5);
         this.moveDistance = this.grid.tileSize;
         this.scale.setTo(1);
-        this.username = username;
-        this.game.physics.startSystem(Phaser.Physics.ARCADE);
-        this.game.physics.arcade.enable(this);
-        this.cursors = this.game.input.keyboard.createCursorKeys();
-        this.cursors.up.onDown.add(this.moveUpwards, this);
-        this.cursors.down.onDown.add(this.moveDownwards, this);
-        this.cursors.left.onDown.add(this.moveLeft, this);
-        this.cursors.right.onDown.add(this.moveRight, this);
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.physics.arcade.enable(this);
+        this.cursors = game.input.keyboard.createCursorKeys();
+        game.camera.follow(this, Phaser.Camera.FOLLOW_LOCKON);
+        game.world.setBounds(0, 0, 10920, 10080);
+        game.camera.setSize(1920, 1080);
+    }
+    update() {
+        if (this.cursors.up.isDown) {
+            this.moveUpwards();
+        }
+        else if (this.cursors.down.isDown) {
+            this.moveDownwards();
+        }
+        else if (this.cursors.left.isDown) {
+            this.moveLeft();
+        }
+        else if (this.cursors.right.isDown) {
+            this.moveRight();
+        }
     }
     moveUpwards() {
-        var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, -1);
-        this.moveTowards(this.x, this.y - this.moveDistance, tile);
+        if (this.moving == false) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, -1);
+            this.moveTowards(this.x, this.y - this.moveDistance, tile);
+        }
     }
     moveDownwards() {
-        var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 1);
-        this.moveTowards(this.x, this.y + this.moveDistance, tile);
+        if (this.moving == false) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 1);
+            this.moveTowards(this.x, this.y + this.moveDistance, tile);
+        }
     }
     moveLeft() {
-        var tile = this.grid.getTileAtPlayer(this.x, this.y, -1, 0);
-        this.moveTowards(this.x - this.moveDistance, this.y, tile);
+        if (this.moving == false) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, -1, 0);
+            this.moveTowards(this.x - this.moveDistance, this.y, tile);
+        }
     }
     moveRight() {
-        var tile = this.grid.getTileAtPlayer(this.x, this.y, 1, 0);
-        this.moveTowards(this.x + this.moveDistance, this.y, tile);
+        if (this.moving == false) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, 1, 0);
+            this.moveTowards(this.x + this.moveDistance, this.y, tile);
+        }
     }
     moveTowards(_x, _y, tile) {
-        if (tile) {
+        if (tile && this.moving == false) {
             var tileState = tile.getState();
             if (tileState == TileState.CUT || tileState == TileState.NONE) {
                 this.moving = true;
                 var tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
             }
-            else if (true) {
+            else if (tileState == TileState.WHEAT) {
+                this.moving = true;
+                this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
     }
-    cutWheat() {
+    cutWheat(tile) {
+        tile.setTile(TileState.CUT);
+        this.onComplete();
     }
     onComplete() {
         this.moving = false;
+    }
+}
+class PlayerManager {
+    constructor(_game, _grid) {
+        this.game = _game;
+        this.grid = _grid;
+        this.opponents = [];
+        this.createEvents();
+        SOCKET.emit("join_ready");
+    }
+    createPlayer(_username) {
+        this.player = new Player(this.game, this.grid, _username);
+        this.game.add.existing(this.player);
+    }
+    createOpponent(_username) {
+        let newOpponent = new Humanoid(this.game);
+        this.opponents.push(newOpponent);
+        console.log(_username + " joined as a new opponent");
+    }
+    moveOpponent(moveData) {
+        let opponent = moveData.player;
+        opponent.moveTowards(moveData.x, moveData.y);
+    }
+    createJoinWindow() {
+        let joinWindow = new JoinGameMenu(this.game);
+    }
+    createEvents() {
+        let client = this;
+        SOCKET.on("join_game", client.createJoinWindow.bind(this));
+        SOCKET.on("init_player", function (username) {
+            client.createPlayer(username);
+        });
+        SOCKET.on("init_opponents", function (opponents) {
+            for (let i = 0; i < opponents.length; i++) {
+                client.createOpponent(opponents[i].username);
+            }
+        });
+        SOCKET.on("player_joined", function (data) {
+            client.createOpponent(data);
+        });
+        SOCKET.on("player_move", function (data) {
+            client.moveOpponent(data);
+        });
     }
 }
 //# sourceMappingURL=app.js.map
