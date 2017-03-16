@@ -3,7 +3,7 @@
     public username: string;
 
     private grid: Grid;
-    private speed: number = 1000;
+    private speed: number = 5000;
     private cursors: Phaser.CursorKeys;
     private moving: boolean = false;
 
@@ -11,6 +11,8 @@
 
     private cutting: boolean = false;
     private cutTime: number = 1000;
+    
+    private holdingTool: boolean = true;
 
     constructor(game: Phaser.Game, grid: Grid, username: string)
     {
@@ -19,7 +21,7 @@
         this.grid = grid;
         this.username = username;
 
-        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(0, 0).getY());
+        this.position.set(grid.getTile(6, 6).getX(), grid.getTile(6, 6).getY());
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
@@ -28,9 +30,12 @@
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
         this.cursors = game.input.keyboard.createCursorKeys();
-        game.camera.follow(this, Phaser.Camera.FOLLOW_LOCKON);
-        game.world.setBounds(0, 0, 10920, 10080);
+        game.camera.follow(this);
         game.camera.focusOnXY(this.x, this.y);
+            
+        game.world.setBounds(0, 0, 10920, 10080);
+
+        
     }
 
     update()
@@ -69,9 +74,7 @@
         
         if (this.moving == false)
         {
-            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, -1);
-
-            this.moveTowards(this.x, this.y - this.moveDistance, tile);
+            this.moveTowards(0, -1);
         }
     }
 
@@ -79,9 +82,7 @@
     {
         if (this.moving == false)
         {
-            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 1);
-
-            this.moveTowards(this.x, this.y + this.moveDistance, tile);
+            this.moveTowards(0, 1);
         }
     }
 
@@ -89,9 +90,7 @@
     {
         if (this.moving == false)
         {
-            var tile = this.grid.getTileAtPlayer(this.x, this.y, -1, 0);
-
-            this.moveTowards(this.x - this.moveDistance, this.y, tile);
+            this.moveTowards(-1, 0);
         }
     }
 
@@ -99,15 +98,14 @@
     {
         if (this.moving == false)
         {
-            var tile = this.grid.getTileAtPlayer(this.x, this.y, 1, 0);
-
-            this.moveTowards(this.x + this.moveDistance, this.y, tile);
+            this.moveTowards(1, 0);
         }
     }
 
-    moveTowards(_x: number, _y: number, tile: Tile)
+    moveTowards(_x: number, _y: number)
     {
-        
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);    
+
         if (tile && this.moving == false)
         {
             var tileState = tile.getState();
@@ -115,7 +113,7 @@
             if (tileState == TileState.CUT || tileState == TileState.NONE)
             {
                 this.moving = true;
-                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: _x - this.width / 2, y: _y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
+                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
             }
             else if (tileState == TileState.WHEAT)
