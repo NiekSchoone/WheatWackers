@@ -2,28 +2,27 @@
 {
     public username: string;
 
-    game: Phaser.Game;
-    grid: Grid;
-    speed: number = 1000;
-    cursors: Phaser.CursorKeys;
-    moving: boolean = false;
+    private grid: Grid;
+    private speed: number = 1000;
+    private cursors: Phaser.CursorKeys;
+    private moving: boolean = false;
 
-    moveDistance: number;
-    cutTime: number = 1000;
+    private moveDistance: number;
+    private cutTime: number = 1000;
 
     constructor(game: Phaser.Game, grid: Grid, username: string)
     {
         super(game, 0, 0, "failguy");
-        console.log(TileState[1]);
+        this.game = game;
         this.grid = grid;
+        this.username = username;
+
         this.position.set(grid.getTile(5, 5).getX(), grid.getTile(5, 5).getY());
         this.anchor.setTo(0.5);
 
-        this.moveDistance = this.grid.tilewidth;
+        this.moveDistance = this.grid.tileSize;
         this.scale.setTo(1);
-        this.game = game;
 
-        this.username = username;
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
         this.cursors = game.input.keyboard.createCursorKeys();
@@ -98,7 +97,7 @@
         
         if (tile && this.moving == false)
         {
-            var tileState = tile.GetState();
+            var tileState = tile.getState();
 
             if (tileState == TileState.CUT || tileState == TileState.NONE)
             {

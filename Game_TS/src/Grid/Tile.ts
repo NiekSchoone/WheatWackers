@@ -31,22 +31,11 @@ class Tile {
 
         this.game.add.existing(this.currentSprite);
     }
-    // world X coordinates
-    public getX() {
-        return this.xPos * this.tileSize +(this.tileSize/2);
-    }
-    // world Y coordinates
-    public getY() {
-        return this.yPos * this.tileSize +(this.tileSize / 2);
-    }
-    // is occupied by wheat
-    public GetState() {
-        return this.currentState;
-    }
+
     //Set whether or not the grass is cut
-    public setTile(newState: TileState) {
-        if (newState != this.currentState) {
-            switch (newState) {
+    public setTile(_newState: TileState) {
+        if (_newState != this.currentState) {
+            switch (_newState) {
                 case TileState.NONE:
                     this.currentSprite.loadTexture('');
                     break;
@@ -60,10 +49,26 @@ class Tile {
                     this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
                     break;
             }
-            this.currentState = newState;
+            this.currentState = _newState;
         }
     }
-    private getRandomNumber(range: number) {
-        return Math.floor(Math.random() * range) + 1;
+
+    private getRandomNumber(_range: number) {
+        return Math.floor(Math.random() * _range) + 1;
+    }
+
+    // world X coordinates
+    public getX() {
+        return this.xPos * this.tileSize + (this.tileSize / 2);
+    }
+
+    // world Y coordinates
+    public getY() {
+        return this.yPos * this.tileSize + (this.tileSize / 2);
+    }
+
+    // is occupied by wheat
+    public getState() {
+        return this.currentState;
     }
 }
