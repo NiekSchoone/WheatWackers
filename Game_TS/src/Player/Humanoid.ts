@@ -1,16 +1,32 @@
 ﻿class Humanoid extends Phaser.Sprite
 {
-    speed: number = 1000;
-    constructor(game : Phaser.Game)
+    private speed: number = 1000;
+    private grid: Grid;
+    private cursorkeys;
+
+
+
+
+    constructor(game: Phaser.Game, grid: Grid, username : string)
     {
-        super(game, 0, 0);
+        super(game, 0, 0, "failguy");
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
+        this.grid = grid;
+        this.anchor.setTo(0.5);
+
+        this.cursorkeys = new Phaser.Key(game, 32);
+        this.cursorkeys.test.add();
     }
 
     public moveTowards(x: number, y: number)
     {
-        
-        var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: x - this.width / 2, y: y - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, x, y) / this.speed * 1000, Phaser.Easing.Linear.None, true); 
+        var tile: Tile = this.grid.getTile(x, y);
+        var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, x, y) / this.speed * 1000, Phaser.Easing.Linear.None, true); 
+    }
+
+    test()
+    {
+
     }
 }

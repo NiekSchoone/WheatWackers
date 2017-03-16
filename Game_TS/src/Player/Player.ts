@@ -8,6 +8,8 @@
     private moving: boolean = false;
 
     private moveDistance: number;
+
+    private cutting: boolean = false;
     private cutTime: number = 1000;
 
     constructor(game: Phaser.Game, grid: Grid, username: string)
@@ -17,7 +19,7 @@
         this.grid = grid;
         this.username = username;
 
-        this.position.set(grid.getTile(5, 5).getX(), grid.getTile(5, 5).getY());
+        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(0, 0).getY());
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
@@ -28,7 +30,7 @@
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this, Phaser.Camera.FOLLOW_LOCKON);
         game.world.setBounds(0, 0, 10920, 10080);
-        game.camera.setSize(1920, 1080);
+        game.camera.focusOnXY(this.x, this.y);
     }
 
     update()
@@ -50,10 +52,21 @@
             this.moveRight();
         }
 
+         
+
+        if (this.cutting == true)
+        {
+            if (this.moving == true)
+            {
+                this.cutting = false;                
+            }
+        }
+        
     }
 
     moveUpwards()
     {
+        
         if (this.moving == false)
         {
             var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, -1);
@@ -107,7 +120,7 @@
             }
             else if (tileState == TileState.WHEAT)
             {
-                this.moving = true;
+                this.cutting = true;
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
@@ -115,8 +128,13 @@
 
     cutWheat(tile: Tile)
     {
-        tile.setTile(TileState.CUT);  
-        this.onComplete();       
+        if (this.cutting == true)
+        {
+            tile.setTile(TileState.CUT);
+            this.onComplete();
+            this.cutting = false;
+        }
+               
     }
 
     onComplete()
