@@ -16,7 +16,7 @@
         super(game, 0, 0, "failguy");
         console.log(TileState[1]);
         this.grid = grid;
-        this.position.set(grid.getTile(0, 0).getX(), grid.getTile(0, 0).getY());
+        this.position.set(grid.getTile(5, 5).getX(), grid.getTile(5, 5).getY());
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tilewidth;
@@ -28,11 +28,8 @@
         game.physics.arcade.enable(this);
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this, Phaser.Camera.FOLLOW_LOCKON);
-        game.world.setBounds(0, 0, 1920, 1080);
-        game.camera.setSize(960, 540);
-        game.camera.x = game.width / 2;
-        game.camera.height = game.height / 2;
-        
+        game.world.setBounds(0, 0, 10920, 10080);
+        game.camera.setSize(1920, 1080);
     }
 
     update()
