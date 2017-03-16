@@ -31,7 +31,6 @@
         });
         SOCKET.on("player_moving", function (data) {
 
-            client.opponents.indexOf(data.username);
         });
     }
 }
