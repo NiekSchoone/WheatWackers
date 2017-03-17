@@ -35,8 +35,8 @@
 
     public generateGrid() {
         this.tiles = [];
-        let midSizeX: number = Math.floor(this.gridWidth / 2) -1;
-        let midSizeY: number = Math.floor(this.gridHeight / 2) - 1;
+        let midSizeX: number = Math.floor(this.gridWidth / 2);
+        let midSizeY: number = Math.floor(this.gridHeight / 2);
 
         this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++){
