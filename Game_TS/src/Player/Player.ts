@@ -21,7 +21,7 @@
         this.grid = grid;
         this.username = username;
 
-        this.position.set(grid.getTile(6, 6).getX(), grid.getTile(6, 6).getY());
+        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
@@ -34,8 +34,6 @@
         game.camera.focusOnXY(this.x, this.y);
             
         game.world.setBounds(0, 0, 10920, 10080);
-
-        
     }
 
     update()
@@ -57,8 +55,6 @@
             this.moveRight();
         }
 
-         
-
         if (this.cutting == true)
         {
             if (this.moving == true)
@@ -66,7 +62,6 @@
                 this.cutting = false;                
             }
         }
-        
     }
 
     moveUpwards()
@@ -104,7 +99,7 @@
 
     moveTowards(_x: number, _y: number)
     {
-        var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);    
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
         if (tile && this.moving == false)
         {
@@ -113,8 +108,9 @@
             if (tileState == TileState.CUT || tileState == TileState.NONE)
             {
                 this.moving = true;
-                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, this.game.physics.arcade.distanceToXY(this, _x, _y) / this.speed * 1000, Phaser.Easing.Linear.None, true);
+                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
+                SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT)
             {

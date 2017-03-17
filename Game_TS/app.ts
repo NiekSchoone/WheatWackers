@@ -4,17 +4,15 @@ class Game {
 
     private game: Phaser.Game;
     private grid: Grid;
-
-    private player: Player;
+    private joinMenu: JoinGameMenu;
+    private playerManager: PlayerManager;
 
     private background: Phaser.TileSprite;
 
     constructor() {
-        this.game = new Phaser.Game(1920, 1080, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
+        this.game = new Phaser.Game(1640, 960, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
 
-        /*SOCKET.on("player_joined", function (data) {
-            console.log(data + " has joined");
-        });*/
+        SOCKET = io.connect();
     }
 
     preload() {
@@ -30,20 +28,21 @@ class Game {
         this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
         this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
         this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
-        this.game.load.image('button_join', 'assets/images/level/button_join.png');
+        this.game.load.image('button_join', 'assets/images/ui/button_join.png');
     }
 
     create() {
-        this.background = new Phaser.TileSprite(this.game, 0, 0, 864, 864, 'background');
+        this.background = new Phaser.TileSprite(this.game, 0, 0, 1640, 960, 'background');
         this.background.texture.width = 864;
         this.background.texture.height = 864;
         this.game.add.existing(this.background);
 
-        this.grid = new Grid(this.game);
-        this.grid.generateGrid(40, 40);
+        let gridSizeX = 10;
+        let gridSizeY = 8;
 
-        this.player = new Player(this.game, this.grid, "username");
-        this.game.add.existing(this.player);
+        this.grid = new Grid(this.game, gridSizeX, gridSizeY);
+
+        this.playerManager = new PlayerManager(this.game, this.grid);
     }
 }
 

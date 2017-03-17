@@ -6,8 +6,9 @@ var io = require("socket.io").listen(server);
 var events = require("events");
 var serverEmitter = new events.EventEmitter();
 
-var players = [];
 var connections = [];
+var players = [];
+var grid;
 
 server.listen(process.env.PORT || 3000);
 
@@ -25,8 +26,6 @@ io.sockets.on("connection", function (socket) {
     connections.push(socket);
     console.log("Connected:  %s sockets connected", connections.length);
 	
-	console.log(players);
-	
     //Disconnect.
     socket.on("disconnect", function (dcData) {
 		if(isPlayer(socket.id)){
@@ -39,22 +38,35 @@ io.sockets.on("connection", function (socket) {
         console.log("disconnected: %s sockets remaining", connections.length);
     });
 	
+	socket.on("grid_created", function(gridData){
+		grid = gridData;
+	});
+	
 	socket.on("join_ready", function(){
+		if(grid != undefined){
+			socket.emit("init_grid", grid);
+		}else{
+			socket.emit("create_grid");
+		}
 		socket.emit("join_game");
 		socket.emit("init_opponents", players);
 	});
 	
-	socket.on("joined", function(username){
-		var player = {socket:socket.id, username:username};
+	socket.on("joined", function(userData){
+		var player = {socket:socket.id, username:userData.username, x:userData.x, y:userData.y};
 		players.push(player);
-		socket.emit("init_player", username);
-		socket.broadcast.emit("player_joined", username);
+		socket.emit("init_player", player.username);
+		socket.broadcast.emit("player_joined", player);
 		console.log("socket: " + player.socket + " has joined the game as " + player.username);
 	});
 	
 	socket.on("player_move", function (moveData) {
+		var player = getPlayerObjectBySocket(socket.id);
+		player.x = moveData.x;
+		player.y = moveData.y;
 		socket.broadcast.emit("player_moving", moveData);
-		console.log(moveData.player + " moved to tile " + moveData.x + " " + moveData.y);
+		
+		console.log(moveData.player + " moved to tile " + player.x + " " + player.y);
 	});
 	socket.on("wheat_cut", function (cutData){
 		socket.broadcast.emit("wheat_cutted", cutData);

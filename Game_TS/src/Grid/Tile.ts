@@ -67,6 +67,9 @@ class Tile {
         return this.yPos * this.tileSize + (this.tileSize / 2);
     }
 
+    public getGridPosX() { return this.xPos; }
+    public getGridPosY() { return this.yPos; }
+
     // is occupied by wheat
     public getState() {
         return this.currentState;

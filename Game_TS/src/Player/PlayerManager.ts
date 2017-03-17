@@ -16,22 +16,25 @@
         SOCKET.emit("join_ready");
     }
 
-    createPlayer(_username:string) {
+    createPlayer(_username: string) {
         this.player = new Player(this.game, this.grid, _username);
         this.game.add.existing(this.player);
     }
-
-    createOpponent(_username: string) {
-        let newOpponent = new Humanoid(this.game, this.grid, _username);
+    createOpponent(playerData: any) {
+        let newOpponent = new Humanoid(this.game, this.grid, playerData.username, playerData.x, playerData.y);
         this.opponents.push(newOpponent);
         this.game.add.existing(newOpponent);
-        console.log(_username + " joined as a new opponent");
+        console.log(playerData.username + " joined as a new opponent");
+    }
+    removeOpponent(_username: string) {
+        let opponentToRemove = this.getOpponentByName(_username);
+        this.opponents.splice(this.opponents.indexOf(opponentToRemove), 1);
+        opponentToRemove.destroy();
     }
 
     moveOpponent(moveData: any) {
         let opponent = this.getOpponentByName(moveData.player);
         opponent.moveTowards(moveData.x, moveData.y);
-        console.log("am I calling move towards?");
     }
 
     createJoinWindow() {
@@ -41,26 +44,26 @@
     createEvents() {
         let client = this;
         SOCKET.on("join_game", client.createJoinWindow.bind(this));
+
         SOCKET.on("init_player", function (username) {
             client.createPlayer(username);
         });
+
         SOCKET.on("init_opponents", function (opponents) {
             for (let i = 0; i < opponents.length; i++) {
-                client.createOpponent(opponents[i].username);
+                client.createOpponent(opponents[i]);
             }
         });
+
         SOCKET.on("player_joined", function (data) {
             client.createOpponent(data);
         });
+
         SOCKET.on("player_disconnected", function (player) {
-            let playerToRemove = client.getOpponentByName(player);
-            client.opponents.splice(0, 1, playerToRemove);
-            playerToRemove.destroy();
-            console.log(client.opponents);
+            client.removeOpponent(player);
         });
 
         SOCKET.on("player_moving", function (data) {
-            console.log("Get gud?");
             client.moveOpponent(data);
         });
     }
