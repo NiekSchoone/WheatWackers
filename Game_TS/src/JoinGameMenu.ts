@@ -9,8 +9,6 @@
 
         this.createUsernameElement();
         document.body.insertBefore(this.userInput, _game.canvas);
-
-        SOCKET.on("player_joined", this.joinButton.destroy);
     }
 
     private createUsernameElement() {
@@ -23,8 +21,7 @@
     }
 
     private joinGame(_ip?: string) {
-        //SOCKET = io.connect(ip);
-        SOCKET.emit("player_joining", document.getElementsByTagName("input")[0].value);
+        SOCKET.emit("joined", document.getElementsByTagName("input")[0].value);
         this.destroy();
     }
 

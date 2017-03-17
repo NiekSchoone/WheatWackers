@@ -50,9 +50,9 @@ class Tile {
         return this.currentSprite;
     }
     //Set whether or not the grass is cut
-    public setTile(newState: TileState) {
-        if (newState != this.currentState) {
-            switch (newState) {
+    public setTile(_newState: TileState) {
+        if (_newState != this.currentState) {
+            switch (_newState) {
                 case TileState.NONE:
                     this.currentSprite.loadTexture('');
                     break;
@@ -66,10 +66,14 @@ class Tile {
                     this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
                     break;
             }
-            this.currentState = newState;
+            this.currentState = _newState;
         }
     }
-    private getRandomNumber(range: number) {
-        return Math.floor(Math.random() * range) + 1;
+
+    private getRandomNumber(_range: number) {
+        return Math.floor(Math.random() * _range) + 1;
+    }
+    public getState() {
+        return this.currentState;
     }
 }

@@ -40,7 +40,7 @@ class Game {
         this.game.add.existing(this.background);
 
         this.grid = new Grid(this.game);
-        this.grid.generateGrid(40, 40);
+        this.grid.generateGrid(10, 10 , 2);
 
         this.player = new Player(this.game, this.grid, "username");
         this.game.add.existing(this.player);
