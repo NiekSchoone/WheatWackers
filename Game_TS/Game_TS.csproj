@@ -35,6 +35,7 @@
     <TypeScriptCompile Include="lib\pixi.d.ts" />
     <TypeScriptCompile Include="src\GameState.ts" />
     <TypeScriptCompile Include="src\Grid\Grid.ts" />
+    <TypeScriptCompile Include="src\Grid\PickUp.ts" />
     <TypeScriptCompile Include="src\Grid\Tile.ts" />
     <TypeScriptCompile Include="src\JoinGameMenu.ts" />
     <TypeScriptCompile Include="src\Player\Humanoid.ts" />
