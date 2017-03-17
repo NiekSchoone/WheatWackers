@@ -13,13 +13,24 @@
     private cutTime: number = 1000;
     
     private holdingTool: boolean = true;
+    private idleAnim;
+    private walkAnim;
 
     constructor(game: Phaser.Game, grid: Grid, username: string)
     {
-        super(game, 0, 0, "failguy");
+        super(game, 0, 0, "idleSheet1");
+        
+        
         this.game = game;
         this.grid = grid;
-        this.username = username;
+        this.username = username;                 0
+
+        this.idleAnim = this.animations.add("idle");
+        this.animations.play("idle", 24, true);
+
+        //
+
+
 
         this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
         this.anchor.setTo(0.5);
@@ -110,7 +121,11 @@
                 this.moving = true;
                 var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
-                SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
+                this.animations.stop("idle");
+                this.loadTexture("walkSheet1");
+                this.walkAnim = this.animations.add("walk");
+                this.animations.play("walk", 24, true);
+                //SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT)
             {
@@ -133,7 +148,14 @@
 
     onComplete()
     {
+        if (this.cursors.left.isDown === false)
+        {
+            this.loadTexture("idleSheet1");
+            this.idleAnim = this.animations.add("idle");
+            this.animations.play("idle", 24, true);
+        }
         this.moving = false;
+        
     }
 }
 
