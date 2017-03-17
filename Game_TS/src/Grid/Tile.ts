@@ -31,7 +31,12 @@ class Tile {
 
         this.game.add.existing(this.currentSprite);
     }
-
+    public setZLayer(layer: number) {
+        this.currentSprite.z = layer;
+    }
+    public GetSprite() {
+        return this.currentSprite;
+    }
     //Set whether or not the grass is cut
     public setTile(_newState: TileState) {
         if (_newState != this.currentState) {

@@ -3,6 +3,8 @@
     private gridWidth: number;
     private gridHeight: number;
     private tiles: Tile[][];
+    private obstacleDensity: number;
+    private spawnAreaSize: number;
     public tileSize: number;
 
     constructor(_game: Phaser.Game, _gridWidth: number, _gridHeight: number) {
@@ -10,6 +12,7 @@
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
 
+        this.spawnAreaSize = 5;
         this.tileSize = 144;
 
         let client = this;
@@ -32,16 +35,29 @@
 
     public generateGrid() {
         this.tiles = [];
+        let midSizeX: number = Math.floor(this.gridWidth / 2) -1;
+        let midSizeY: number = Math.floor(this.gridHeight / 2) - 1;
 
+        this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++){
             this.tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
-                newTile.setTile((Math.floor(Math.random() * 4)) as TileState);
+                if (x < midSizeX + this.spawnAreaSize && x > (midSizeX - this.spawnAreaSize) && y < midSizeY + this.spawnAreaSize && y > (midSizeY - this.spawnAreaSize)) {
+                    newTile.setTile(TileState.CUT);
+                    newTile.setZLayer(y * 3);
+                }
+                else if (Math.random() * 100 < this.obstacleDensity) {
+                    newTile.setTile(TileState.OBSTACLE);
+                    newTile.setZLayer((y * 3) - 1);
+                }
+                else {
+                    newTile.setTile(TileState.WHEAT);
+                    newTile.setZLayer(y * 3);
+                }
                 this.tiles[x][y] = newTile;
             }
         }
-        //this.tileSize = this.tiles[0][0].tileSize;
     }
 
     public generateGridFromServer(gridData: number[][]) {
