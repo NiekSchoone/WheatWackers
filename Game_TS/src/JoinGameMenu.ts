@@ -3,8 +3,8 @@
     private userInput: HTMLElement;
 
     constructor(_game: Phaser.Game) {
-        let xPos = (document.body.clientWidth / 2) - (_game.cache.getImage("button_join").width / 2);
-        let yPos = document.body.clientHeight / 2;
+        let xPos = 400 - (_game.cache.getImage("button_join").width / 2);
+        let yPos = 300;
         this.joinButton = _game.add.button(xPos, yPos, 'button_join', this.joinGame, this);
 
         this.createUsernameElement();
@@ -21,7 +21,7 @@
     }
 
     private joinGame(_ip?: string) {
-        SOCKET.emit("joined", document.getElementsByTagName("input")[0].value);
+        SOCKET.emit("joined", { username: document.getElementsByTagName("input")[0].value });
         this.destroy();
     }
 
