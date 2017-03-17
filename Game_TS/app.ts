@@ -12,7 +12,7 @@ class Game {
     constructor() {
         this.game = new Phaser.Game(1640, 960, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
 
-        SOCKET = io.connect();
+        //SOCKET = io.connect();
     }
 
     preload() {
@@ -42,7 +42,7 @@ class Game {
 
         this.grid = new Grid(this.game, gridSizeX, gridSizeY);
 
-        this.playerManager = new PlayerManager(this.game, this.grid);
+        //this.playerManager = new PlayerManager(this.game, this.grid);
     }
 }
 

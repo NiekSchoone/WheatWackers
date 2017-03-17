@@ -12,13 +12,13 @@
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
 
-        this.spawnAreaSize = 5;
+        this.spawnAreaSize = 2;
         this.tileSize = 144;
 
         let client = this;
-        SOCKET.on("create_grid", function () {
+        //SOCKET.on("create_grid", function () {
             client.generateGrid();
-
+/*
             let serverData = [];
             for (var x = 0; x < client.gridWidth; x++) {
                 serverData[x] = [];
@@ -30,7 +30,7 @@
         });
         SOCKET.on("init_grid", function (gridData) {
             client.generateGridFromServer(gridData);
-        });
+        });*/
     }
 
     public generateGrid() {
