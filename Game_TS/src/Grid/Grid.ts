@@ -5,21 +5,41 @@
     Tiles: Tile[][];
     space: Phaser.Key;
     tilewidth: number;
+    tileGrope: Phaser.Group;
+    obstacleDensity: number;
     constructor(_game: Phaser.Game) {
         this.game = _game;
     }
 
-    public generateGrid(_gridWidth: number, _gridHeight: number) {
+    public generateGrid(_gridWidth: number, _gridHeight: number, _midHalfSize: number) {
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
         this.Tiles = [];
+        this.tileGrope = this.game.add.group();
+        let midSizeX: number = Math.floor(_gridWidth / 2) -1;
 
+        let midSizeY: number = Math.floor(_gridHeight / 2) -1;
+
+        this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++){
             this.Tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
-                newTile.setTile((Math.floor(Math.random() * 4)) as TileState);
+                this.tileGrope.add(newTile.GetSprite);
+                if (x < midSizeX + _midHalfSize && x > (midSizeX - _midHalfSize) && y < midSizeY + _midHalfSize && y > (midSizeY - _midHalfSize)) {
+                    newTile.setTile(TileState.CUT);
+                    newTile.setZLayer(y * 3);
+                }
+                else if (Math.random() * 100 < this.obstacleDensity) {
+                    newTile.setTile(TileState.OBSTACLE);
+                    newTile.setZLayer((y * 3) - 1);
+                }
+                else {
+                    newTile.setTile(TileState.WHEAT);
+                    newTile.setZLayer(y * 3);
+                }
                 this.Tiles[x][y] = newTile;
+                this.tileGrope.sort('y', Phaser.Group.SORT_ASCENDING)
             }
         }
         this.tilewidth = this.Tiles[0][0].tileSize;

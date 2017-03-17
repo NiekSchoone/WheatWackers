@@ -43,6 +43,12 @@ class Tile {
     public GetState() {
         return this.currentState;
     }
+    public setZLayer(layer: number) {
+        this.currentSprite.z = layer;
+    }
+    public GetSprite() {
+        return this.currentSprite;
+    }
     //Set whether or not the grass is cut
     public setTile(newState: TileState) {
         if (newState != this.currentState) {
