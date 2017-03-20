@@ -16,9 +16,8 @@
         this.tileSize = 144;
 
         let client = this;
-        SOCKET.on("create_grid", function () {
+        /*SOCKET.on("create_grid", function () {
             client.generateGrid();
-
             let serverData = [];
             for (var x = 0; x < client.gridWidth; x++) {
                 serverData[x] = [];
@@ -34,7 +33,7 @@
 
         SOCKET.on("wheat_cutted", function (tilePos) {
             client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        });
+        });*/
     }
 
     public generateGrid() {

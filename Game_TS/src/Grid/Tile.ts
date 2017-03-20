@@ -9,9 +9,9 @@ class Tile {
     private xPos: number;
     private yPos: number;
     private spriteSize: number;
-
+    private pickUp: PickUp;
     public tileSize: number;
-
+    private hasPickUp: boolean = false;
     private currentSprite: Phaser.Sprite;
     private currentState: TileState;
 
@@ -37,6 +37,20 @@ class Tile {
     public GetSprite() {
         return this.currentSprite;
     }
+    public getHasPickUp() {
+        return this.hasPickUp;
+    }
+    public getPickUp() {
+        let p = this.pickUp;
+        this.pickUp = null;
+        this.hasPickUp = false;
+        return p;
+    }
+    public setPickUp(_pickUp: PickUp) {
+        this.pickUp = _pickUp;
+        this.hasPickUp = true;
+    }
+
     //Set whether or not the grass is cut
     public setTile(_newState: TileState) {
         if (_newState != this.currentState) {

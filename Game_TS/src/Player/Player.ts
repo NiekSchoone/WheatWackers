@@ -6,22 +6,34 @@
     private speed: number = 5000;
     private cursors: Phaser.CursorKeys;
     private moving: boolean = false;
+    private holdingKey: boolean = false;
+    private playerScale: number;
 
     private moveDistance: number;
 
     private cutting: boolean = false;
     private cutTime: number = 1000;
-    
+
     private holdingTool: boolean = true;
+    private idleAnim;
+    private walkAnim;
+
+
 
     constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
     {
-        super(game, 0, 0, "failguy");
+        super(game, 0, 0, "idleRun1");
+
         this.game = game;
         this.grid = grid;
         this.username = username;
+        
+        this.animations.add("idle", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]);
+        this.animations.add("walk", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
+        this.animations.play("idle", 24, true);
 
-        this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
+        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
+
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
@@ -41,25 +53,34 @@
         if (this.cursors.up.isDown)
         {
             this.moveUpwards();
+            this.holdingKey = true;
         }
         else if (this.cursors.down.isDown)
         {
             this.moveDownwards();
+            this.holdingKey = true;
         }
         else if (this.cursors.left.isDown)
         {
             this.moveLeft();
+            this.holdingKey = true;
         }
         else if (this.cursors.right.isDown)
         {
             this.moveRight();
+            this.holdingKey = true;
         }
+        else
+        {
+            this.holdingKey = false;
+        }
+        
 
         if (this.cutting == true)
         {
             if (this.moving == true)
             {
-                this.cutting = false;                
+                this.cutting = false;
             }
         }
     }
@@ -82,8 +103,11 @@
 
     moveLeft()
     {
+
         if (this.moving == false)
         {
+            //this.scale.x = -0.5;
+            this.scale.setTo(-0.5, 0.5);
             this.moveTowards(-1, 0);
         }
     }
@@ -92,24 +116,30 @@
     {
         if (this.moving == false)
         {
+            //this.scale.x = 0.5;
+            this.scale.setTo(0.5, 0.5);
             this.moveTowards(1, 0);
         }
     }
 
     moveTowards(_x: number, _y: number)
     {
+        console.log(this.x + " " + this.y );
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
         if (tile && this.moving == false)
         {
+
+            //console.log(tile.getX() + "  " + tile.getY());
             var tileState = tile.getState();
 
             if (tileState == TileState.CUT || tileState == TileState.NONE)
             {
                 this.moving = true;
-                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, 500, Phaser.Easing.Linear.None, true);
+                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) / 2, y: tile.getY() - Math.abs(this.height) / 2 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
-                SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
+                this.animations.play("walk", 24, true);
+                //SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT)
             {
@@ -132,7 +162,14 @@
 
     onComplete()
     {
+        if (this.holdingKey == false)
+        {
+            this.animations.play("idle", 24, true);
+        }
+        
+
         this.moving = false;
+
     }
 }
 
