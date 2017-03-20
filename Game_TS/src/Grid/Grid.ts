@@ -6,7 +6,8 @@
     private obstacleDensity: number;
     private spawnAreaSize: number;
     public tileSize: number;
-
+    private midPointX: number;
+    private midPointY: number
     constructor(_game: Phaser.Game, _gridWidth: number, _gridHeight: number) {
         this.game = _game;
         this.gridWidth = _gridWidth;
@@ -35,15 +36,15 @@
 
     public generateGrid() {
         this.tiles = [];
-        let midSizeX: number = Math.floor(this.gridWidth / 2);
-        let midSizeY: number = Math.floor(this.gridHeight / 2);
+        this.midPointX = Math.floor(this.gridWidth / 2);
+        this.midPointY = Math.floor(this.gridHeight / 2);
 
         this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++){
             this.tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
-                if (x < midSizeX + this.spawnAreaSize && x > (midSizeX - this.spawnAreaSize) && y < midSizeY + this.spawnAreaSize && y > (midSizeY - this.spawnAreaSize)) {
+                if (x < this.midPointX + this.spawnAreaSize && x > (this.midPointX - this.spawnAreaSize) && y < this.midPointY + this.spawnAreaSize && y > (this.midPointY - this.spawnAreaSize)) {
                     newTile.setTile(TileState.CUT);
                     newTile.setZLayer(y * 3);
                 }
@@ -98,7 +99,8 @@
     public getAllTiles() {
         return this.tiles;
     }
-
+    public getMidX() { return this.midPointX; }
+    public getMidY() { return this.midPointY; }
     public getGridWidth() { return this.gridWidth; }
     public getGridHeight() { return this.gridHeight }
 }
