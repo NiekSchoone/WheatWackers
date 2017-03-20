@@ -181,9 +181,9 @@
         this.trapped = false;
     }
 
-    die()
+    public respawn(x:number, y:number)
     {
-
+        this.position.set(this.grid.getTile(x, y).getX(), this.grid.getTile(x, y).getY());
     }
 }
 
