@@ -10,7 +10,7 @@ class Tile {
     private yPos: number;
     private spriteSize: number;
     private pickUp: PickUp;
-    //private trap: Trap;
+    private trap: Trap;
     public tileSize: number;
     private hasPickUp: boolean = false;
     private hasTrap: boolean = false;
@@ -39,10 +39,10 @@ class Tile {
     public GetSprite() {
         return this.currentSprite;
     }
-    public setTrap() {
+    public setTrap(_trap : Trap) {
         if (!this.hasTrap) {
             this.hasTrap = true;
-            //this.trap = _trap;
+            this.trap = _trap;
         }
     }
     public setPickup(_pickUp: PickUp) {
@@ -54,14 +54,14 @@ class Tile {
    
     public checkTile(_player: Player) {
         if (this.hasPickUp) {
-            //_player.setTrap(this.trap);
             this.pickUp = null;
             this.hasPickUp = false;
         }
         else if (this.hasTrap) {
             //_player.setTrap(this.trap);
-            //this.trap = null;
-            //this.hasTrap = false;
+            this.trap = null;
+            this.hasTrap = false;
+            this.trap.activateTrap(_player);
         }
 
     }

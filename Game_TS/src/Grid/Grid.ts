@@ -15,7 +15,7 @@
 
         this.spawnAreaSize = 2;
         this.tileSize = 144;
-
+        this.generateGrid();
         let client = this;
         /*SOCKET.on("create_grid", function () {
             client.generateGrid();

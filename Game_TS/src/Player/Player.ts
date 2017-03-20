@@ -18,7 +18,8 @@
     private idleAnim;
     private walkAnim;
 
-
+    public trapped: boolean = false;
+    private holdingTreasure: boolean;
 
     constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
     {
@@ -124,10 +125,9 @@
 
     moveTowards(_x: number, _y: number)
     {
-        console.log(this.x + " " + this.y );
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
-        if (tile && this.moving == false)
+        if (tile && this.moving == false && this.trapped == false)
         {
 
             //console.log(tile.getX() + "  " + tile.getY());
@@ -156,7 +156,7 @@
             tile.setTile(TileState.CUT);
             this.onComplete();
             this.cutting = false;
-            SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
+            //SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
     }
 
@@ -166,9 +166,23 @@
         {
             this.animations.play("idle", 24, true);
         }
-        
 
         this.moving = false;
+    }
+
+    public getTrapped(time: number)
+    {
+        this.trapped = true;
+        this.game.time.events.add(time, this.getUntrapped);
+    }
+
+    getUntrapped()
+    {
+        this.trapped = false;
+    }
+
+    die()
+    {
 
     }
 }
