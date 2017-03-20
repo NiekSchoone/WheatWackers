@@ -10,8 +10,10 @@ class Tile {
     private yPos: number;
     private spriteSize: number;
     private pickUp: PickUp;
+    //private trap: Trap;
     public tileSize: number;
     private hasPickUp: boolean = false;
+    private hasTrap: boolean = false;
     private currentSprite: Phaser.Sprite;
     private currentState: TileState;
 
@@ -37,14 +39,31 @@ class Tile {
     public GetSprite() {
         return this.currentSprite;
     }
-    public getHasPickUp() {
-        return this.hasPickUp;
+    public setTrap() {
+        if (!this.hasTrap) {
+            this.hasTrap = true;
+            //this.trap = _trap;
+        }
     }
-    public getPickUp() {
-        let p = this.pickUp;
-        this.pickUp = null;
-        this.hasPickUp = false;
-        return p;
+    public setPickup(_pickUp: PickUp) {
+        if (!this.hasPickUp) {
+            this.hasPickUp = true;
+            this.pickUp = _pickUp;
+        }
+    }
+   
+    public checkTile(_player: Player) {
+        if (this.hasPickUp) {
+            //_player.setTrap(this.trap);
+            this.pickUp = null;
+            this.hasPickUp = false;
+        }
+        else if (this.hasTrap) {
+            //_player.setTrap(this.trap);
+            //this.trap = null;
+            //this.hasTrap = false;
+        }
+
     }
     public setPickUp(_pickUp: PickUp) {
         this.pickUp = _pickUp;
