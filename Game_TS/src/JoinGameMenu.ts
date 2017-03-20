@@ -1,14 +1,17 @@
 ﻿class JoinGameMenu {
     private joinButton: Phaser.Button;
     private userInput: HTMLElement;
+    private callback: any;
 
-    constructor(_game: Phaser.Game) {
-        let xPos = 400 - (_game.cache.getImage("button_join").width / 2);
-        let yPos = 300;
+    constructor(_game: Phaser.Game, callback: (username:string) => any) {
+        let xPos = 432 - (_game.cache.getImage("button_join").width / 2);
+        let yPos = 500;
         this.joinButton = _game.add.button(xPos, yPos, 'button_join', this.joinGame, this);
 
         this.createUsernameElement();
         document.body.insertBefore(this.userInput, _game.canvas);
+
+        this.callback = callback;
     }
 
     private createUsernameElement() {
@@ -21,8 +24,10 @@
     }
 
     private joinGame(_ip?: string) {
-        SOCKET.emit("joined", { username: document.getElementsByTagName("input")[0].value });
+        this.callback(document.getElementsByTagName("input")[0].value);
         this.destroy();
+        //return document.getElementsByTagName("input")[0].value;
+        //SOCKET.emit("joined", { username: document.getElementsByTagName("input")[0].value });
     }
 
     public destroy() {

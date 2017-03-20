@@ -14,14 +14,14 @@
     
     private holdingTool: boolean = true;
 
-    constructor(game: Phaser.Game, grid: Grid, username: string)
+    constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
     {
         super(game, 0, 0, "failguy");
         this.game = game;
         this.grid = grid;
         this.username = username;
 
-        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
+        this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
@@ -33,7 +33,7 @@
         game.camera.follow(this);
         game.camera.focusOnXY(this.x, this.y);
             
-        game.world.setBounds(0, 0, 10920, 10080);
+        game.world.setBounds(0, 0, 3024, 3024);
     }
 
     update()
@@ -66,7 +66,6 @@
 
     moveUpwards()
     {
-        
         if (this.moving == false)
         {
             this.moveTowards(0, -1);
@@ -127,8 +126,8 @@
             tile.setTile(TileState.CUT);
             this.onComplete();
             this.cutting = false;
+            SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
-               
     }
 
     onComplete()

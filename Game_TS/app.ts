@@ -3,6 +3,7 @@
 class Game {
 
     private game: Phaser.Game;
+    private stage: Phaser.Stage;
     private grid: Grid;
     private joinMenu: JoinGameMenu;
     private playerManager: PlayerManager;
@@ -10,7 +11,8 @@ class Game {
     private background: Phaser.TileSprite;
 
     constructor() {
-        this.game = new Phaser.Game(1640, 960, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
+        this.game = new Phaser.Game(864, 864, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
+        this.game.stage = new Phaser.Stage(this.game);
 
         SOCKET = io.connect();
     }
@@ -32,14 +34,15 @@ class Game {
     }
 
     create() {
-        this.background = new Phaser.TileSprite(this.game, 0, 0, 1640, 960, 'background');
+        this.game.stage.disableVisibilityChange = true;
+
+        this.background = new Phaser.TileSprite(this.game, 0, 0, 3024, 3024, 'background');
         this.background.texture.width = 864;
         this.background.texture.height = 864;
         this.game.add.existing(this.background);
 
-        let gridSizeX = 10;
-        let gridSizeY = 8;
-
+        let gridSizeX = 21;
+        let gridSizeY = 21;
         this.grid = new Grid(this.game, gridSizeX, gridSizeY);
 
         this.playerManager = new PlayerManager(this.game, this.grid);

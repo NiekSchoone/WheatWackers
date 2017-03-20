@@ -3,6 +3,8 @@
     private player: Player;
     private opponents: Humanoid[];
 
+    private spawnPoints: any[];
+
     private game: Phaser.Game;
     private grid: Grid;
 
@@ -10,14 +12,15 @@
         this.game = _game;
         this.grid = _grid;
         this.opponents = [];
+        this.spawnPoints = [{ x: 10, y: 9 }, { x: 9, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 10 }];
 
         this.createEvents();
 
         SOCKET.emit("join_ready");
     }
 
-    createPlayer(_username: string) {
-        this.player = new Player(this.game, this.grid, _username);
+    createPlayer(_username: string, _spawnPoint:any) {
+        this.player = new Player(this.game, this.grid, _username, _spawnPoint);
         this.game.add.existing(this.player);
     }
     createOpponent(playerData: any) {
@@ -31,22 +34,24 @@
         this.opponents.splice(this.opponents.indexOf(opponentToRemove), 1);
         opponentToRemove.destroy();
     }
-
     moveOpponent(moveData: any) {
         let opponent = this.getOpponentByName(moveData.player);
         opponent.moveTowards(moveData.x, moveData.y);
     }
-
     createJoinWindow() {
-        let joinWindow = new JoinGameMenu(this.game);
+        let client = this;
+        let joinWindow = new JoinGameMenu(this.game, function (username: string) {
+            let spawnPoint = client.spawnPoints[client.opponents.length];
+            SOCKET.emit("joined", { username: username, x: spawnPoint.x, y: spawnPoint.y });
+        });
     }
 
     createEvents() {
         let client = this;
         SOCKET.on("join_game", client.createJoinWindow.bind(this));
 
-        SOCKET.on("init_player", function (username) {
-            client.createPlayer(username);
+        SOCKET.on("init_player", function (playerData) {
+            client.createPlayer(playerData.username, { x: playerData.x, y: playerData.y });
         });
 
         SOCKET.on("init_opponents", function (opponents) {
@@ -74,5 +79,7 @@
                 return this.opponents[i];
             }
         }
+    }
+    getOpenSpawn() {
     }
 }

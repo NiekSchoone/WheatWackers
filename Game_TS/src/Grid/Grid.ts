@@ -12,7 +12,7 @@
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
 
-        this.spawnAreaSize = 5;
+        this.spawnAreaSize = 2;
         this.tileSize = 144;
 
         let client = this;
@@ -31,12 +31,16 @@
         SOCKET.on("init_grid", function (gridData) {
             client.generateGridFromServer(gridData);
         });
+
+        SOCKET.on("wheat_cutted", function (tilePos) {
+            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
+        });
     }
 
     public generateGrid() {
         this.tiles = [];
-        let midSizeX: number = Math.floor(this.gridWidth / 2) -1;
-        let midSizeY: number = Math.floor(this.gridHeight / 2) - 1;
+        let midSizeX: number = Math.floor(this.gridWidth / 2);
+        let midSizeY: number = Math.floor(this.gridHeight / 2);
 
         this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++){
