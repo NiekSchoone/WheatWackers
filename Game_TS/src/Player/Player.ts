@@ -18,7 +18,8 @@
     private idleAnim;
     private walkAnim;
 
-
+    public trapped: boolean = true;
+    private holdingTreasure: boolean;
 
     constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
     {
@@ -127,7 +128,7 @@
         console.log(this.x + " " + this.y );
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
-        if (tile && this.moving == false)
+        if (tile && this.moving == false && this.trapped == false)
         {
 
             //console.log(tile.getX() + "  " + tile.getY());
@@ -166,9 +167,23 @@
         {
             this.animations.play("idle", 24, true);
         }
-        
 
         this.moving = false;
+    }
+
+    public getTrapped(time: number)
+    {
+        this.trapped = true;
+        this.game.time.events.add(time, this.getUntrapped);
+    }
+
+    getUntrapped()
+    {
+        this.trapped = false;
+    }
+
+    die()
+    {
 
     }
 }
