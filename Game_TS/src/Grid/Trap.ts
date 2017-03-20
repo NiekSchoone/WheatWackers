@@ -13,11 +13,11 @@
     {
         if (this.trapTime != 0)
         {
-            
+            target.getTrapped(this.trapTime);
         }
         else
         {
-            
+            target.die();
         }
     }
 }
