@@ -20,23 +20,20 @@
 
 
 
-    constructor(game: Phaser.Game, grid: Grid, username: string)
+    constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
     {
         super(game, 0, 0, "idleRun1");
 
         this.game = game;
         this.grid = grid;
         this.username = username;
-
+        
         this.animations.add("idle", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]);
         this.animations.add("walk", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
         this.animations.play("idle", 24, true);
 
-        //
-
-
-
         this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
+
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
@@ -47,8 +44,8 @@
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this);
         game.camera.focusOnXY(this.x, this.y);
-
-        game.world.setBounds(0, 0, 10920, 10080);
+            
+        game.world.setBounds(0, 0, 3024, 3024);
     }
 
     update()
@@ -90,7 +87,6 @@
 
     moveUpwards()
     {
-
         if (this.moving == false)
         {
             this.moveTowards(0, -1);
@@ -160,8 +156,8 @@
             tile.setTile(TileState.CUT);
             this.onComplete();
             this.cutting = false;
+            SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
-
     }
 
     onComplete()

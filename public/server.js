@@ -40,6 +40,7 @@ io.sockets.on("connection", function (socket) {
 	
 	socket.on("grid_created", function(gridData){
 		grid = gridData;
+		console.log(grid);
 	});
 	
 	socket.on("join_ready", function(){
@@ -55,7 +56,7 @@ io.sockets.on("connection", function (socket) {
 	socket.on("joined", function(userData){
 		var player = {socket:socket.id, username:userData.username, x:userData.x, y:userData.y};
 		players.push(player);
-		socket.emit("init_player", player.username);
+		socket.emit("init_player", player);
 		socket.broadcast.emit("player_joined", player);
 		console.log("socket: " + player.socket + " has joined the game as " + player.username);
 	});
@@ -70,7 +71,7 @@ io.sockets.on("connection", function (socket) {
 	});
 	socket.on("wheat_cut", function (cutData){
 		socket.broadcast.emit("wheat_cutted", cutData);
-		console.log(cutData.tile + " was cut down");
+		console.log("tile x: " + cutData.x + " y: " + cutData.y + " was cut down");
 	});
 });
 

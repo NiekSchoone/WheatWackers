@@ -17,9 +17,8 @@
         this.tileSize = 144;
 
         let client = this;
-        //SOCKET.on("create_grid", function () {
+        /*SOCKET.on("create_grid", function () {
             client.generateGrid();
-/*
             let serverData = [];
             for (var x = 0; x < client.gridWidth; x++) {
                 serverData[x] = [];
@@ -31,6 +30,10 @@
         });
         SOCKET.on("init_grid", function (gridData) {
             client.generateGridFromServer(gridData);
+        });
+
+        SOCKET.on("wheat_cutted", function (tilePos) {
+            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
         });*/
     }
 
@@ -38,6 +41,7 @@
         this.tiles = [];
         this.midPointX = Math.floor(this.gridWidth / 2);
         this.midPointY = Math.floor(this.gridHeight / 2);
+
 
         this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++){
