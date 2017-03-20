@@ -16,6 +16,7 @@ class Tile {
     private hasTrap: boolean = false;
     private currentSprite: Phaser.Sprite;
     private currentState: TileState;
+    private playerTraped: string;
 
     constructor(_game: Phaser.Game, _x: number, _y: number)
     {
@@ -39,10 +40,12 @@ class Tile {
     public GetSprite() {
         return this.currentSprite;
     }
-    public setTrap(_trap : Trap) {
+    public setTrap(_trap: Trap, playername: string) {
         if (!this.hasTrap) {
             this.hasTrap = true;
             this.trap = _trap;
+            this.playerTraped = playername;
+
         }
     }
     public setPickup(_pickUp: PickUp) {
@@ -58,10 +61,14 @@ class Tile {
             this.hasPickUp = false;
         }
         else if (this.hasTrap) {
-            //_player.setTrap(this.trap);
-            this.trap = null;
-            this.hasTrap = false;
-            this.trap.activateTrap(_player);
+            if (_player.username != this.playerTraped) {
+                //_player.setTrap(this.trap);
+                this.trap = null;
+                this.hasTrap = false;
+                this.trap.activateTrap(_player);
+                this.playerTraped = null;
+            }
+            
         }
 
     }
