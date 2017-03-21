@@ -21,6 +21,12 @@
     public trapped: boolean = false;
     private holdingTreasure: boolean;
 
+    private trapOneKey;
+    private trapTwoKey;
+    private trapThreeKey;
+
+    private targetTile: Tile;
+
     constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
     {
         super(game, 0, 0, "idleRun1");
@@ -32,13 +38,14 @@
         this.animations.add("idle", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]);
         this.animations.add("walk", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
         this.animations.play("idle", 24, true);
+           
 
         this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
 
         this.anchor.setTo(0.5);
 
         this.moveDistance = this.grid.tileSize;
-        this.scale.setTo(1);
+        this.scale.setTo(0.5);
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
@@ -47,6 +54,11 @@
         game.camera.focusOnXY(this.x, this.y);
             
         game.world.setBounds(0, 0, 3024, 3024);
+        this.trapOneKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ONE);
+        this.trapTwoKey = this.game.input.keyboard.addKey(Phaser.Keyboard.TWO);
+        this.trapThreeKey = this.game.input.keyboard.addKey(Phaser.Keyboard.THREE);
+
+        this.trapOneKey.onDown.add(this.placeTrap.bind(this));
     }
 
     update()
@@ -125,10 +137,14 @@
 
     moveTowards(_x: number, _y: number)
     {
-        var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
+        if (this.moving == false)
+        {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
+        }
 
         if (tile && this.moving == false && this.trapped == false)
         {
+            this.targetTile = tile;
 
             //console.log(tile.getX() + "  " + tile.getY());
             var tileState = tile.getState();
@@ -137,8 +153,9 @@
             {
                 this.moving = true;
                 var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) / 2, y: tile.getY() - Math.abs(this.height) / 2 }, 500, Phaser.Easing.Linear.None, true);
-                tween.onComplete.add(this.onComplete, this);
+                tween.onComplete.add(this.onComplete, this, 1, tile);
                 this.animations.play("walk", 24, true);
+                
                 //SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT)
@@ -154,7 +171,7 @@
         if (this.cutting == true)
         {
             tile.setTile(TileState.CUT);
-            this.onComplete();
+            //this.onComplete();
             this.cutting = false;
             //SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
@@ -167,23 +184,47 @@
             this.animations.play("idle", 24, true);
         }
 
+        //this.position.set(this.targetTile.getX(), this.targetTile.getY());
+
         this.moving = false;
+
+        
+        
+        this.targetTile.checkTile(this);
+        
     }
 
     public getTrapped(time: number)
     {
         this.trapped = true;
-        this.game.time.events.add(time, this.getUntrapped);
+        this.game.time.events.add(time, this.getUntrapped, this);
+        alert("Trapped");
     }
 
     getUntrapped()
     {
         this.trapped = false;
+        alert("Released");
     }
 
-    respawn(x:number, y:number)
+    public respawn(x:number, y:number)
     {
         this.position.set(this.grid.getTile(x, y).getX(), this.grid.getTile(x, y).getY());
     }
+
+    placeTrap()
+    {
+        if (this.moving == false)
+        {
+            var tile: Tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 0);
+
+            if (tile.getTrapStatus() == false)
+            {
+                var newTrap: Trap = new Trap(this.game, 10000);
+                tile.setTrap(newTrap, "FFF");
+            }
+        }
+    }
 }
 
+             

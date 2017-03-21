@@ -1,24 +1,24 @@
-﻿class Trap                  
+﻿class Trap extends Phaser.Sprite    
 {
     public owner: string;
     public trapTime: number;    
 
-    constructor(owner : string, trapTime : number = 0)
+    constructor(game: Phaser.Game, trapTime : number = 0)
     {
-        this.owner = owner;
+        super(game,0,0,"trap");
         this.trapTime = trapTime;
-           
+        this.anchor.set(0.5);
     }
 
     public activateTrap(target:Player)
     {
         if (this.trapTime != 0)
         {
-            //target.getTrapped(this.trapTime);
+            target.getTrapped(this.trapTime);
         }
         else
         {
-            //target.respawn();
+            target.respawn(0, 0);
         }
     }
 }
