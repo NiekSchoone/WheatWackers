@@ -5,7 +5,7 @@
 
     constructor(game: Phaser.Game, trapTime : number = 0)
     {
-        super(game,0,0,"trap");
+        super(game,0,0,"trap1");
         this.trapTime = trapTime;
         this.anchor.set(0.5);
     }

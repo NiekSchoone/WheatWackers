@@ -51,14 +51,18 @@ class Tile {
         }
     }
     public setPickup(_pickUp: PickUp) {
-        if (!this.hasPickUp) {
+        if (!this.hasPickUp)
+        {
+            this.currentSprite.addChild(_pickUp);
             this.hasPickUp = true;
             this.pickUp = _pickUp;
         }
     }
    
     public checkTile(_player: Player) {
-        if (this.hasPickUp) {
+        if (this.hasPickUp)
+        {
+            this.currentSprite.removeChild(this.pickUp);
             this.pickUp = null;
             this.hasPickUp = false;
         }
