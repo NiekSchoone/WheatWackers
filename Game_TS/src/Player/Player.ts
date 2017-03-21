@@ -18,26 +18,29 @@
     private idleAnim;
     private walkAnim;
 
+    public playerID: number;
+    public spawnPoint: any;
 
-
-    constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
+    constructor(game: Phaser.Game, grid: Grid, id:number, username: string, spawnPoint:any)
     {
-        super(game, 0, 0, "idleRun1");
+        super(game, 0, 0, "player_" + id);
 
         this.game = game;
         this.grid = grid;
+        this.playerID = id;
         this.username = username;
-        
-        this.animations.add("idle", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]);
-        this.animations.add("walk", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
+        this.spawnPoint = spawnPoint
+
+        this.animations.add("idle", Phaser.ArrayUtils.numberArray(62,101));
+        this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
+        this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
         this.animations.play("idle", 24, true);
 
-        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
+        this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
 
-        this.anchor.setTo(0.5);
+        this.anchor.setTo(0.5, 0.75);
 
         this.moveDistance = this.grid.tileSize;
-        this.scale.setTo(1);
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
@@ -74,7 +77,6 @@
         {
             this.holdingKey = false;
         }
-        
 
         if (this.cutting == true)
         {
@@ -103,11 +105,9 @@
 
     moveLeft()
     {
-
         if (this.moving == false)
         {
-            //this.scale.x = -0.5;
-            this.scale.setTo(-0.5, 0.5);
+            this.scale.setTo(-1, 1);
             this.moveTowards(-1, 0);
         }
     }
@@ -116,33 +116,33 @@
     {
         if (this.moving == false)
         {
-            //this.scale.x = 0.5;
-            this.scale.setTo(0.5, 0.5);
+            this.scale.setTo(1, 1);
             this.moveTowards(1, 0);
         }
     }
 
     moveTowards(_x: number, _y: number)
     {
-        console.log(this.x + " " + this.y );
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
+        console.log(this.z);
+        console.log(tile.GetSprite().z);
         if (tile && this.moving == false)
         {
-
-            //console.log(tile.getX() + "  " + tile.getY());
             var tileState = tile.getState();
 
             if (tileState == TileState.CUT || tileState == TileState.NONE)
             {
                 this.moving = true;
-                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) / 2, y: tile.getY() - Math.abs(this.height) / 2 }, 500, Phaser.Easing.Linear.None, true);
+                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
                 this.animations.play("walk", 24, true);
-                //SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
+                SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT)
             {
+                this.moving = false;
+                this.animations.play("cut", 24, true);
                 this.cutting = true;
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
@@ -166,10 +166,8 @@
         {
             this.animations.play("idle", 24, true);
         }
-        
 
         this.moving = false;
-
     }
 }
 

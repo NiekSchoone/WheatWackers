@@ -7,7 +7,9 @@
     private spawnAreaSize: number;
     public tileSize: number;
 
-    constructor(_game: Phaser.Game, _gridWidth: number, _gridHeight: number) {
+    private callBack:any;
+
+    constructor(_game: Phaser.Game, _gridWidth: number, _gridHeight: number, callback: (tiles: Tile[][]) => any) {
         this.game = _game;
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
@@ -15,8 +17,10 @@
         this.spawnAreaSize = 2;
         this.tileSize = 144;
 
+        this.callBack = callback;
+
         let client = this;
-        /*SOCKET.on("create_grid", function () {
+        SOCKET.on("create_grid", function () {
             client.generateGrid();
             let serverData = [];
             for (var x = 0; x < client.gridWidth; x++) {
@@ -33,7 +37,7 @@
 
         SOCKET.on("wheat_cutted", function (tilePos) {
             client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        });*/
+        });
     }
 
     public generateGrid() {
@@ -61,6 +65,7 @@
                 this.tiles[x][y] = newTile;
             }
         }
+        this.callBack(this.tiles);
     }
 
     public generateGridFromServer(gridData: number[][]) {
@@ -74,6 +79,7 @@
                 this.tiles[x][y] = newTile;
             }
         }
+        this.callBack(this.tiles);
     }
 
     // get tile at player coordinate +/- directionX and directionY on grid coordinate 

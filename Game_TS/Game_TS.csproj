@@ -23,6 +23,24 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="assets\images\level\background.jpg" />
+    <Content Include="assets\images\level\Obstacle_01.png" />
+    <Content Include="assets\images\level\Obstacle_02.png" />
+    <Content Include="assets\images\level\Obstacle_03.png" />
+    <Content Include="assets\images\level\wheat_01.png" />
+    <Content Include="assets\images\level\wheat_02.png" />
+    <Content Include="assets\images\level\wheat_03.png" />
+    <Content Include="assets\images\level\wheat_04.png" />
+    <Content Include="assets\images\level\wheat_05.png" />
+    <Content Include="assets\images\level\wheat_cut_01.png" />
+    <Content Include="assets\images\level\wheat_cut_02.png" />
+    <Content Include="assets\images\level\wheat_cut_03.png" />
+    <Content Include="assets\images\TestingAssets\grass.jpg" />
+    <Content Include="assets\images\UI\button_join.png" />
+    <Content Include="assets\spritesheets\player_1.png" />
+    <Content Include="assets\spritesheets\player_2.png" />
+    <Content Include="assets\spritesheets\player_3.png" />
+    <Content Include="assets\spritesheets\player_4.png" />
     <Content Include="index.html" />
     <Content Include="lib\phaser.js" />
     <Content Include="lib\phaser.min.js" />
@@ -51,9 +69,7 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="assets\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>
