@@ -21,7 +21,10 @@
     public playerID: number;
     public spawnPoint: any;
 
-    constructor(game: Phaser.Game, grid: Grid, id:number, username: string, spawnPoint:any)
+    public trapped: boolean = false;
+    private holdingTreasure: boolean;
+
+    constructor(game: Phaser.Game, grid: Grid, id: number, username: string, spawnPoint:any)
     {
         super(game, 0, 0, "player_" + id);
 
@@ -124,10 +127,8 @@
     moveTowards(_x: number, _y: number)
     {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
-
-        console.log(this.z);
-        console.log(tile.GetSprite().z);
-        if (tile && this.moving == false)
+        
+        if (tile && this.moving == false && this.trapped == false)
         {
             var tileState = tile.getState();
 
@@ -156,18 +157,32 @@
             tile.setTile(TileState.CUT);
             this.onComplete();
             this.cutting = false;
-            SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
+            //SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
     }
 
-    onComplete()
-    {
-        if (this.holdingKey == false)
-        {
+    onComplete() {
+        if (this.holdingKey == false) {
             this.animations.play("idle", 24, true);
         }
 
         this.moving = false;
+    }
+
+    public getTrapped(time: number)
+    {
+        this.trapped = true;
+        this.game.time.events.add(time, this.getUntrapped);
+    }
+
+    getUntrapped()
+    {
+        this.trapped = false;
+    }
+
+    public respawn(x:number, y:number)
+    {
+        this.position.set(this.grid.getTile(x, y).getX(), this.grid.getTile(x, y).getY());
     }
 }
 

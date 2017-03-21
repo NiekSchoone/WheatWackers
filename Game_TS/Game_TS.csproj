@@ -56,9 +56,11 @@
     <TypeScriptCompile Include="src\Grid\PickUp.ts" />
     <TypeScriptCompile Include="src\Grid\Tile.ts" />
     <TypeScriptCompile Include="src\JoinGameMenu.ts" />
+    <TypeScriptCompile Include="src\MenuState.ts" />
     <TypeScriptCompile Include="src\Player\Humanoid.ts" />
     <TypeScriptCompile Include="src\Player\Player.ts" />
     <TypeScriptCompile Include="src\Player\PlayerManager.ts" />
+    <TypeScriptCompile Include="src\Trap.ts" />
     <TypeScriptCompile Include="tsd\socket.io.d.ts" />
   </ItemGroup>
   <ItemGroup>
