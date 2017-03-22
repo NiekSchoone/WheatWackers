@@ -17,6 +17,7 @@
         this.game.load.image('PickUp_WaterCan', 'assets/images/PickUp/waterCan.png');
         this.game.load.image('PickUp_MouseTrap', 'assets/images/PickUp/mouseTrap.png');
         this.game.load.image('PickUp_Shovel', 'assets/images/PickUp/Shovel.png');
+        this.game.load.image('PickUp_tool', 'assets/images/PickUps/pickup_sikkel_001.png');
         this.game.load.image('treasure', 'assets/images/treasure/treasure.png');
         this.game.load.image('menuBackground', 'assets/images/MenuBackground.jpg');
         this.game.load.spritesheet('CreateButton', 'assets/images/UI/buttonCreate.png', 512, 256);

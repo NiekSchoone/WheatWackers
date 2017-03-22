@@ -29,6 +29,9 @@ class PickUp extends Phaser.Sprite
             case PickUpType.mouseTrap:
                 this.loadTexture('PickUp_MouseTrap');
                 break;
+            case PickUpType.tool:
+                this.loadTexture('PickUp_tool');
+                break;
         }
 
         this.pickUpType = type;
