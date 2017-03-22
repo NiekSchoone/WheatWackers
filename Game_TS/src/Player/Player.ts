@@ -170,6 +170,14 @@
             if (tileState == TileState.CUT || tileState == TileState.NONE || (tileState == TileState.WHEAT && this.holdingTool == false))
             {
                 this.moving = true;
+                if (tileState == TileState.WHEAT) {
+                    this.grid.setPickupAlpha(.5);
+                    this.alpha = .5;
+                }
+                else {
+                    this.grid.setPickupAlpha(0);
+                    this.alpha = 1;
+                }
                 if (this.hasTreasure == false && this.holdingTool == true)
                 {
                     this.animations.play("walk", 24, true);

@@ -118,7 +118,7 @@ class Tile {
                 case TileState.CUT:
                     this.currentSprite.loadTexture('wheat_cut_' + this.getRandomNumber(3));
                     if (this.hasPickUp)
-                    { this.setpickUpAlpha(0); }
+                    { this.setpickUpAlpha(1); }
                     break;
                 case TileState.OBSTACLE:
                     this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
