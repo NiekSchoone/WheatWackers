@@ -89,23 +89,23 @@ class Grid {
         this.tileSize = 144;
         this.callBack = callback;
         let client = this;
-        SOCKET.on("create_grid", function () {
-            client.generateGrid();
-            let serverData = [];
-            for (var x = 0; x < client.gridWidth; x++) {
-                serverData[x] = [];
-                for (var y = 0; y < client.gridHeight; y++) {
-                    serverData[x][y] = client.getTile(x, y).getState();
-                }
-            }
-            SOCKET.emit("grid_created", serverData);
-        });
-        SOCKET.on("init_grid", function (gridData) {
-            client.generateGridFromServer(gridData);
-        });
-        SOCKET.on("wheat_cutted", function (tilePos) {
-            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        });
+        client.generateGrid();
+        //SOCKET.on("create_grid", function () {
+        //    let serverData = [];
+        //    for (var x = 0; x < client.gridWidth; x++) {
+        //        serverData[x] = [];
+        //        for (var y = 0; y < client.gridHeight; y++) {
+        //            serverData[x][y] = client.getTile(x, y).getState() as number;
+        //        }
+        //    }
+        //    SOCKET.emit("grid_created", serverData);
+        //});
+        //SOCKET.on("init_grid", function (gridData) {
+        //    client.generateGridFromServer(gridData);
+        //});
+        //SOCKET.on("wheat_cutted", function (tilePos) {
+        //    client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
+        //});
     }
     generateGrid() {
         this.tiles = [];
@@ -234,9 +234,13 @@ class Grid {
     getGridWidth() { return this.gridWidth; }
     getGridHeight() { return this.gridHeight; }
 }
-class PickUp {
-    constructor(name) {
-        this.pickUpType = name;
+class PickUp extends Phaser.Sprite {
+    constructor(game, type) {
+        super(game, 0, 0, '');
+        if (type == "treasure") {
+            this.loadTexture('treasure');
+        }
+        this.pickUpType = type;
     }
 }
 var TileState;
@@ -285,28 +289,36 @@ class Tile {
             this.hasTrap = true;
             this.trap = _trap;
             this.playerTraped = playername;
+            this.trap.position.set(128, 128);
+            console.log(this.trap.x, this.trap.y);
+            this.currentSprite.addChild(_trap);
         }
     }
     setPickup(_pickUp) {
         if (!this.hasPickUp) {
+            this.currentSprite.addChild(_pickUp);
             this.hasPickUp = true;
             this.pickUp = _pickUp;
         }
     }
     checkTile(_player) {
         if (this.hasPickUp) {
+            this.currentSprite.removeChild(this.pickUp);
             this.pickUp = null;
             this.hasPickUp = false;
         }
         else if (this.hasTrap) {
             if (_player.username != this.playerTraped) {
-                //_player.setTrap(this.trap);
+                this.trap.activateTrap(_player);
+                this.currentSprite.removeChild(this.trap);
                 this.trap = null;
                 this.hasTrap = false;
-                this.trap.activateTrap(_player);
                 this.playerTraped = null;
             }
         }
+    }
+    getTrapStatus() {
+        return this.hasTrap;
     }
     setPickUp(_pickUp) {
         this.pickUp = _pickUp;
@@ -354,6 +366,21 @@ class Tile {
         this.animation.play("cut", 24, false, true);
     }
 }
+class Trap extends Phaser.Sprite {
+    constructor(game, trapTime = 0) {
+        super(game, 0, 0, "trap1");
+        this.trapTime = trapTime;
+        this.anchor.set(0.5);
+    }
+    activateTrap(target) {
+        if (this.trapTime != 0) {
+            target.getTrapped(this.trapTime);
+        }
+        else {
+            target.respawn();
+        }
+    }
+}
 class JoinGameMenu {
     constructor(_game, callback) {
         let xPos = 432 - (_game.cache.getImage("button_join").width / 2);
@@ -381,11 +408,6 @@ class JoinGameMenu {
         this.joinButton.destroy();
         document.body.removeChild(this.userInput);
         this.userInput = null;
-    }
-}
-class MenuState {
-    constructor(_game) {
-        this.game = _game;
     }
 }
 class Humanoid extends Phaser.Sprite {
@@ -541,21 +563,32 @@ class Player extends Phaser.Sprite {
             this.animations.play("idle", 24, true);
         }
         this.moving = false;
+        this.targetTile.checkTile(this);
     }
     getTrapped(time) {
         this.trapped = true;
-        this.game.time.events.add(time, this.getUntrapped);
+        this.game.time.events.add(time, this.getUntrapped, this);
+        alert("Trapped");
     }
     getUntrapped() {
         this.trapped = false;
+        alert("Released");
     }
     respawn() {
         this.position.set(this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getX(), this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getY());
         this.spawnAnimation.animations.play('spawn', 24, false, true);
     }
+    placeTrap() {
+        if (this.moving == false) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 0);
+            if (tile.getTrapStatus() == false) {
+                var newTrap = new Trap(this.game, 10000);
+                tile.setTrap(newTrap, "FFF");
+            }
+        }
+    }
 }
 class PlayerManager {
-    //private spawnAnimation: Phaser.Sprite;
     constructor(_game, _grid, _group) {
         this.game = _game;
         this.grid = _grid;
@@ -651,20 +684,6 @@ class PlayerManager {
             if (this.players[i] == null) {
                 return i;
             }
-        }
-    }
-}
-class Trap {
-    constructor(owner, trapTime = 0) {
-        this.owner = owner;
-        this.trapTime = trapTime;
-    }
-    activateTrap(target) {
-        if (this.trapTime != 0) {
-            target.getTrapped(this.trapTime);
-        }
-        else {
-            target.respawn();
         }
     }
 }

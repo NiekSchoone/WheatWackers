@@ -7,7 +7,6 @@
     private game: Phaser.Game;
     private group: Phaser.Group;
     private grid: Grid;
-    //private spawnAnimation: Phaser.Sprite;
 
     constructor(_game: Phaser.Game, _grid: Grid, _group: Phaser.Group) {
         this.game = _game;

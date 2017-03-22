@@ -21,26 +21,27 @@
         this.tileSize = 144;
 
         this.callBack = callback;
-
+        
         let client = this;
-        SOCKET.on("create_grid", function () {
-            client.generateGrid();
-            let serverData = [];
-            for (var x = 0; x < client.gridWidth; x++) {
-                serverData[x] = [];
-                for (var y = 0; y < client.gridHeight; y++) {
-                    serverData[x][y] = client.getTile(x, y).getState() as number;
-                }
-            }
-            SOCKET.emit("grid_created", serverData);
-        });
-        SOCKET.on("init_grid", function (gridData) {
-            client.generateGridFromServer(gridData);
-        });
+        client.generateGrid();
+        //SOCKET.on("create_grid", function () {
+            
+        //    let serverData = [];
+        //    for (var x = 0; x < client.gridWidth; x++) {
+        //        serverData[x] = [];
+        //        for (var y = 0; y < client.gridHeight; y++) {
+        //            serverData[x][y] = client.getTile(x, y).getState() as number;
+        //        }
+        //    }
+        //    SOCKET.emit("grid_created", serverData);
+        //});
+        //SOCKET.on("init_grid", function (gridData) {
+        //    client.generateGridFromServer(gridData);
+        //});
 
-        SOCKET.on("wheat_cutted", function (tilePos) {
-            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        });
+        //SOCKET.on("wheat_cutted", function (tilePos) {
+        //    client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
+        //});
     }
 
     public generateGrid() {

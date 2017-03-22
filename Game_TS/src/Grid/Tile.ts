@@ -63,32 +63,45 @@ class Tile {
             this.hasTrap = true;
             this.trap = _trap;
             this.playerTraped = playername;
-
+            this.trap.position.set(128, 128);
+            console.log(this.trap.x, this.trap.y);
+            this.currentSprite.addChild(_trap);
         }
     }
     public setPickup(_pickUp: PickUp) {
-        if (!this.hasPickUp) {
+        if (!this.hasPickUp)
+        {
+            this.currentSprite.addChild(_pickUp);
             this.hasPickUp = true;
             this.pickUp = _pickUp;
         }
     }
    
     public checkTile(_player: Player) {
-        if (this.hasPickUp) {
+        if (this.hasPickUp)
+        {
+            this.currentSprite.removeChild(this.pickUp);
             this.pickUp = null;
             this.hasPickUp = false;
         }
         else if (this.hasTrap) {
-            if (_player.username != this.playerTraped) {
-                //_player.setTrap(this.trap);
+            if (_player.username != this.playerTraped)
+            {
+                this.trap.activateTrap(_player);
+                this.currentSprite.removeChild(this.trap);
                 this.trap = null;
                 this.hasTrap = false;
-                this.trap.activateTrap(_player);
                 this.playerTraped = null;
             }
             
         }
     }
+
+    public getTrapStatus()
+    {
+        return this.hasTrap;
+    }
+
     public setPickUp(_pickUp: PickUp) {
         this.pickUp = _pickUp;
         this.hasPickUp = true;

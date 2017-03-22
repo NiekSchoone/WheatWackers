@@ -5,7 +5,7 @@
     private spawnPonits: Tile[];
     private players: Humanoid[];
     public gameState() {
-        this.gamefield = new Grid(this.game, 35, 35);
+        //this.gamefield = new Grid(this.game, 35, 35);
         //if first player
         
         this.gamefield.generateGrid()

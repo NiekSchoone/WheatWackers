@@ -1,6 +1,15 @@
-﻿class PickUp {
+﻿class PickUp extends Phaser.Sprite
+{
     public pickUpType: string;
-    constructor(name: string) {
-        this.pickUpType = name;
+    constructor(game: Phaser.Game, type: string)
+    {
+        super(game, 0, 0, '');
+
+        if (type == "treasure")
+        {
+            this.loadTexture('treasure');     
+        }
+
+        this.pickUpType = type;
     } 
 }

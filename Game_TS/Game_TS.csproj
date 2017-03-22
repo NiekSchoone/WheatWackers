@@ -42,6 +42,9 @@
     <Content Include="assets\images\level\wheat_cut_02.png" />
     <Content Include="assets\images\level\wheat_cut_03.png" />
     <Content Include="assets\images\TestingAssets\grass.jpg" />
+    <Content Include="assets\images\traps\trap_mouse_001.png" />
+    <Content Include="assets\images\traps\trap_pit_stage_01_001.png" />
+    <Content Include="assets\images\treasure\pickup_treasure_001.png" />
     <Content Include="assets\images\UI\button_join.png" />
     <Content Include="assets\spritesheets\player_1.png" />
     <Content Include="assets\spritesheets\player_2.png" />
@@ -62,12 +65,12 @@
     <TypeScriptCompile Include="src\Grid\Grid.ts" />
     <TypeScriptCompile Include="src\Grid\PickUp.ts" />
     <TypeScriptCompile Include="src\Grid\Tile.ts" />
+    <TypeScriptCompile Include="src\Grid\Trap.ts" />
     <TypeScriptCompile Include="src\JoinGameMenu.ts" />
     <TypeScriptCompile Include="src\MenuState.ts" />
     <TypeScriptCompile Include="src\Player\Humanoid.ts" />
     <TypeScriptCompile Include="src\Player\Player.ts" />
     <TypeScriptCompile Include="src\Player\PlayerManager.ts" />
-    <TypeScriptCompile Include="src\Trap.ts" />
     <TypeScriptCompile Include="tsd\socket.io.d.ts" />
   </ItemGroup>
   <ItemGroup>

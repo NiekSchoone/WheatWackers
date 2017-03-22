@@ -1,5 +1,4 @@
-﻿class Humanoid extends Phaser.Sprite
-{
+﻿class Humanoid extends Phaser.Sprite {
     private speed: number = 1000;
     private grid: Grid;
     private cursorkeys;
@@ -7,15 +6,14 @@
     private spawnPoint: any;
     public spawnAnimation: Phaser.Sprite;
 
-    public playerID:number;
-    public username:string;
+    public playerID: number;
+    public username: string;
 
-    constructor(game: Phaser.Game, grid: Grid, id: number, username: string, x: number, y: number, spawnAnim:Phaser.Sprite)
-    {
-        super(game, 0, 0, "player_"+id);
+    constructor(game: Phaser.Game, grid: Grid, id: number, username: string, x: number, y: number, spawnAnim: Phaser.Sprite) {
+        super(game, 0, 0, "player_" + id);
 
         this.grid = grid;
-        this.spawnPoint = {x:x,y:y};
+        this.spawnPoint = { x: x, y: y };
         this.username = username;
         this.playerID = id;
 
@@ -40,8 +38,7 @@
         this.cursorkeys = new Phaser.Key(game, 32);
     }
 
-    public moveTowards(x: number, y: number)
-    {
+    public moveTowards(x: number, y: number) {
         var tile: Tile = this.grid.getTile(x, y);
 
         if (this.x > tile.getX()) {
