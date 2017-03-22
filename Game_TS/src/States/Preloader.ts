@@ -22,7 +22,7 @@
     create()
     {
         this.initStates();
-
+        
         this.game.state.start("MenuState")
     }
     initStates() {
