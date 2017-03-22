@@ -80,7 +80,6 @@
     <TypeScriptCompile Include="src\Grid\PickUp.ts" />
     <TypeScriptCompile Include="src\Grid\Tile.ts" />
     <TypeScriptCompile Include="src\Grid\Trap.ts" />
-    <TypeScriptCompile Include="src\JoinGameMenu.ts" />
     <TypeScriptCompile Include="src\Player\Humanoid.ts" />
     <TypeScriptCompile Include="src\Player\Player.ts" />
     <TypeScriptCompile Include="src\Player\PlayerManager.ts" />

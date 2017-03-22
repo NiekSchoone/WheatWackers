@@ -12,8 +12,6 @@ window.onload = () => {
     var game = new Game();
 };
 class BootState extends Phaser.State {
-    init() {
-    }
     preload() {
         this.game.load.image('loading', 'assets/images/ui/loading_image.png');
     }
@@ -94,6 +92,7 @@ class Grid {
         this.midPointX = Math.floor(this.gridWidth / 2);
         this.midPointY = Math.floor(this.gridHeight / 2);
         this.obstacleDensity = 20;
+        this.pickupDensity = 20;
         for (let x = 0; x < this.gridWidth; x++) {
             this.tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
@@ -137,6 +136,11 @@ class Grid {
                 else if (Math.random() * 100 < this.obstacleDensity) {
                     newTile.setTile(TileState.OBSTACLE);
                 }
+                else if (Math.random() * 100 < this.pickupDensity) {
+                    let newPickup = new PickUp(this.game, Math.random() * 4 + 1);
+                    newTile.setPickup(newPickup);
+                    newTile.setTile(TileState.WHEAT);
+                }
                 else {
                     newTile.setTile(TileState.WHEAT);
                 }
@@ -144,6 +148,16 @@ class Grid {
             }
         }
         this.callBack(this.tiles);
+    }
+    setPickupAlpha(alpha) {
+        for (let x = 0; x < this.gridWidth; x++) {
+            for (let y = 0; y < this.gridHeight; y++) {
+                let tile = this.tiles[x][y];
+                if (tile.getPickupStatus && tile.getState() != TileState.CUT) {
+                    tile.setpickUpAlpha(alpha);
+                }
+            }
+        }
     }
     generateGridFromServer(gridData) {
         this.tiles = [];
@@ -218,13 +232,56 @@ class Grid {
     getGridWidth() { return this.gridWidth; }
     getGridHeight() { return this.gridHeight; }
 }
+var PickUpType;
+(function (PickUpType) {
+    PickUpType[PickUpType["treasure"] = 0] = "treasure";
+    PickUpType[PickUpType["cow"] = 1] = "cow";
+    PickUpType[PickUpType["wateringCan"] = 2] = "wateringCan";
+    PickUpType[PickUpType["mouseTrap"] = 3] = "mouseTrap";
+    PickUpType[PickUpType["shovel"] = 4] = "shovel";
+    PickUpType[PickUpType["tool"] = 5] = "tool";
+})(PickUpType || (PickUpType = {}));
 class PickUp extends Phaser.Sprite {
     constructor(game, type) {
         super(game, 0, 0, '');
-        if (type == "treasure") {
-            this.loadTexture('treasure');
+        switch (type) {
+            case PickUpType.treasure:
+                this.loadTexture('treasure');
+                break;
+            case PickUpType.cow:
+                this.loadTexture('PickUp_Cow');
+                break;
+            case PickUpType.wateringCan:
+                this.loadTexture('PickUp_WaterCan');
+                break;
+            case PickUpType.shovel:
+                this.loadTexture('PickUp_Shovel');
+                break;
+            case PickUpType.mouseTrap:
+                this.loadTexture('PickUp_MouseTrap');
+                break;
         }
         this.pickUpType = type;
+        this.anchor.set(0.5);
+    }
+    activate(player) {
+        switch (this.pickUpType) {
+            case PickUpType.treasure:
+                player.pickUpTreasure();
+                break;
+            case PickUpType.cow:
+                player.speed += 500;
+                break;
+            case PickUpType.tool:
+                player.holdingTool = true;
+                break;
+            case PickUpType.shovel:
+                player.hasPitTrap = true;
+                break;
+            case PickUpType.mouseTrap:
+                player.hasMouseTrap = true;
+                break;
+        }
     }
 }
 var TileState;
@@ -273,13 +330,14 @@ class Tile {
             this.hasTrap = true;
             this.trap = _trap;
             this.playerTraped = playername;
-            this.trap.position.set(128, 128);
+            this.trap.position.set(66, 0);
             console.log(this.trap.x, this.trap.y);
             this.currentSprite.addChild(_trap);
         }
     }
     setPickup(_pickUp) {
         if (!this.hasPickUp) {
+            //_pickUp.position.set(128, 128);
             this.currentSprite.addChild(_pickUp);
             this.hasPickUp = true;
             this.pickUp = _pickUp;
@@ -287,6 +345,7 @@ class Tile {
     }
     checkTile(_player) {
         if (this.hasPickUp) {
+            this.pickUp.activate(_player);
             this.currentSprite.removeChild(this.pickUp);
             this.pickUp = null;
             this.hasPickUp = false;
@@ -301,12 +360,11 @@ class Tile {
             }
         }
     }
+    getPickupStatus() {
+        return this.hasPickUp;
+    }
     getTrapStatus() {
         return this.hasTrap;
-    }
-    setPickUp(_pickUp) {
-        this.pickUp = _pickUp;
-        this.hasPickUp = true;
     }
     //Set whether or not the grass is cut
     setTile(_newState) {
@@ -320,6 +378,9 @@ class Tile {
                     break;
                 case TileState.CUT:
                     this.currentSprite.loadTexture('wheat_cut_' + this.getRandomNumber(3));
+                    if (this.hasPickUp) {
+                        this.setpickUpAlpha(1);
+                    }
                     break;
                 case TileState.OBSTACLE:
                     this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
@@ -345,6 +406,11 @@ class Tile {
     getState() {
         return this.currentState;
     }
+    setpickUpAlpha(alpha) {
+        if (this.hasPickUp) {
+            this.pickUp.alpha = alpha;
+        }
+    }
     playCutAnim() {
         this.animation.visible = true;
         this.animation.play("cut", 24, false, true);
@@ -352,9 +418,15 @@ class Tile {
 }
 class Trap extends Phaser.Sprite {
     constructor(game, trapTime = 0) {
-        super(game, 0, 0, "trap1");
+        super(game, 0, 0, "");
         this.trapTime = trapTime;
         this.anchor.set(0.5);
+        if (trapTime == 0) {
+            this.loadTexture("pitTrap");
+        }
+        else {
+            this.loadTexture("mouseTrap");
+        }
     }
     activateTrap(target) {
         if (this.trapTime != 0) {
@@ -363,33 +435,6 @@ class Trap extends Phaser.Sprite {
         else {
             target.respawn();
         }
-    }
-}
-class JoinGameMenu {
-    constructor(_game, callback) {
-        let xPos = 432 - (_game.cache.getImage("button_join").width / 2);
-        let yPos = 500;
-        this.joinButton = _game.add.button(xPos, yPos, 'button_join', this.joinGame, this);
-        this.createUsernameElement();
-        document.body.insertBefore(this.userInput, _game.canvas);
-        this.callback = callback;
-    }
-    createUsernameElement() {
-        this.userInput = document.createElement('input');
-        this.userInput.style.right = "50%";
-        this.userInput.style.width = "250px";
-        this.userInput.style.position = "fixed";
-        this.userInput.style.margin = "20% -125px 0px 0px";
-        this.userInput.style.display = "block";
-    }
-    joinGame(_ip) {
-        this.callback(document.getElementsByTagName("input")[0].value);
-        this.destroy();
-    }
-    destroy() {
-        this.joinButton.destroy();
-        document.body.removeChild(this.userInput);
-        this.userInput = null;
     }
 }
 class Humanoid extends Phaser.Sprite {
@@ -418,6 +463,12 @@ class Humanoid extends Phaser.Sprite {
     }
     moveTowards(x, y) {
         var tile = this.grid.getTile(x, y);
+        if (tile.getState() == TileState.WHEAT) {
+            this.alpha = 0;
+        }
+        else {
+            this.alpha = 1;
+        }
         if (this.x > tile.getX()) {
             this.scale.setTo(-1, 1);
         }
@@ -442,6 +493,9 @@ class Player extends Phaser.Sprite {
         this.cutTime = 1000;
         this.holdingTool = true;
         this.trapped = false;
+        this.hasTreasure = false;
+        this.hasMouseTrap = true;
+        this.hasPitTrap = true;
         this.game = game;
         this.grid = grid;
         this.playerID = id;
@@ -454,6 +508,10 @@ class Player extends Phaser.Sprite {
         this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
         this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
         this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
+        this.animations.add("treasureWalk", Phaser.ArrayUtils.numberArray(31, 36));
+        this.animations.add("treasureIdle", Phaser.ArrayUtils.numberArray(102, 161));
+        this.animations.add("emptyWalk", Phaser.ArrayUtils.numberArray(176, 206));
+        this.animations.add("emptyIdle", Phaser.ArrayUtils.numberArray(207, 245));
         this.animations.play("idle", 24, true);
         this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
         this.anchor.setTo(0.5, 0.75);
@@ -468,6 +526,12 @@ class Player extends Phaser.Sprite {
         this.game.add.existing(this.spawnAnimation);
         this.spawnAnimation.animations.play('spawn', 24, false, true);
         this.spawnSound.play();
+        this.toolKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.trapKey1 = game.input.keyboard.addKey(Phaser.Keyboard.ONE);
+        this.trapKey2 = game.input.keyboard.addKey(Phaser.Keyboard.TWO);
+        this.toolKey.onDown.add(this.equipTool, this);
+        this.trapKey1.onDown.add(this.placeTrapOne, this);
+        this.trapKey2.onDown.add(this.placeTrapTwo, this);
     }
     update() {
         if (this.cursors.up.isDown) {
@@ -519,22 +583,38 @@ class Player extends Phaser.Sprite {
     }
     moveTowards(_x, _y) {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
-        this.targetTile = tile;
         if (tile && this.moving == false && this.trapped == false && this.cutting == false) {
             var tileState = tile.getState();
-            if (tileState == TileState.CUT || tileState == TileState.NONE) {
+            this.targetTile = tile;
+            if (tileState == TileState.CUT || tileState == TileState.NONE || (tileState == TileState.WHEAT && this.holdingTool == false)) {
                 this.moving = true;
                 this.animations.play("walk", 24, true);
                 this.walkSound.play();
+                if (tileState == TileState.WHEAT) {
+                    this.grid.setPickupAlpha(.5);
+                    this.alpha = .5;
+                }
+                else {
+                    this.grid.setPickupAlpha(0);
+                    this.alpha = 1;
+                }
+                if (this.hasTreasure == false && this.holdingTool == true) {
+                    this.animations.play("walk", 24, true);
+                }
+                else if (this.hasTreasure == true) {
+                    this.animations.play("treasureWalk", 24, true);
+                }
+                else {
+                    this.animations.play("emptyWalk", 24, true);
+                }
                 var tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
                 SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
-            else if (tileState == TileState.WHEAT) {
+            else if (tileState == TileState.WHEAT && this.holdingTool == true) {
                 this.moving = false;
                 this.animations.play("cut", 24, true);
                 this.cutting = true;
-                this.cutSound.play();
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
@@ -546,12 +626,23 @@ class Player extends Phaser.Sprite {
             this.onComplete();
             this.cutting = false;
             SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
-            this.cutSound.stop();
         }
     }
     onComplete() {
         if (this.holdingKey == false) {
-            this.animations.play("idle", 24, true);
+            if (!this.hasTreasure && this.holdingTool) {
+                this.animations.play("idle", 24, true);
+            }
+            else if (this.hasTreasure) {
+                if (this.grid.getTileAtPlayer(this.x, this.y, 0, 0).getGridPosX == this.grid.getMidX && this.grid.getTileAtPlayer(this.x, this.y, 0, 0).getGridPosY == this.grid.getMidY) {
+                }
+                else {
+                    this.animations.play("treasureIdle", 24, true);
+                }
+            }
+            else {
+                this.animations.play("emptyIdle", 24, true);
+            }
         }
         this.moving = false;
         this.targetTile.checkTile(this);
@@ -559,23 +650,41 @@ class Player extends Phaser.Sprite {
     getTrapped(time) {
         this.trapped = true;
         this.game.time.events.add(time, this.getUntrapped, this);
-        alert("Trapped");
+    }
+    pickUpTreasure() {
+        this.hasTreasure = true;
     }
     getUntrapped() {
         this.trapped = false;
-        alert("Released");
     }
     respawn() {
         this.position.set(this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getX(), this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getY());
         this.spawnAnimation.animations.play('spawn', 24, false, true);
     }
-    placeTrap() {
-        if (this.moving == false) {
+    placeTrapOne() {
+        if (this.moving == false && this.hasMouseTrap == true) {
             var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 0);
             if (tile.getTrapStatus() == false) {
                 var newTrap = new Trap(this.game, 10000);
-                tile.setTrap(newTrap, "FFF");
+                tile.setTrap(newTrap, this.username);
+                this.hasMouseTrap = false;
             }
+        }
+    }
+    placeTrapTwo() {
+        if (this.moving == false && this.hasPitTrap == true) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 0);
+            if (tile.getTrapStatus() == false) {
+                var newTrap = new Trap(this.game);
+                tile.setTrap(newTrap, this.username);
+                this.hasPitTrap = false;
+            }
+        }
+    }
+    equipTool() {
+        if (this.holdingTool == true) {
+            this.holdingTool = false;
+            this.grid.getTileAtPlayer(this.x, this.y, 0, 0).setPickup(new PickUp(this.game, PickUpType.tool));
         }
     }
 }
@@ -686,8 +795,10 @@ class MenuState extends Phaser.State {
         this.createUsernameElement();
         document.body.insertBefore(this.userInput, this.game.canvas);
         this.buttonSound = this.game.add.sound("button_sound", 1, false);
-        this.joinButton = this.add.button(this.game.world.centerX - 256, 300, 'JoinButton', this.joinButtonDown, this, 0, 1);
-        this.howToButton = this.add.button(this.game.world.centerX - 256, 500, 'HowToButton', this.howToButtonDown, this, 0, 1);
+        this.joinButton = this.add.button(this.game.world.centerX + 100, 250, 'JoinButton', this.joinButtonDown, this, 0, 1);
+        this.joinButton.angle = 5;
+        this.howToButton = this.add.button(this.game.world.centerX + 100, 450, 'HowToButton', this.howToButtonDown, this, 0, 1);
+        this.howToButton.angle = 5;
     }
     createUsernameElement() {
         this.userInput = document.createElement('input');
@@ -732,6 +843,11 @@ class Preloader extends Phaser.State {
         this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
         this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
         this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
+        this.game.load.image('PickUp_Cow', 'assets/images/PickUp/cow.png');
+        this.game.load.image('PickUp_WaterCan', 'assets/images/PickUp/waterCan.png');
+        this.game.load.image('PickUp_MouseTrap', 'assets/images/PickUp/mouseTrap.png');
+        this.game.load.image('PickUp_Shovel', 'assets/images/PickUp/Shovel.png');
+        this.game.load.image('treasure', 'assets/images/treasure/treasure.png');
         this.game.load.image('fence_side', 'assets/images/level/fence_side.png');
         this.game.load.image('fence_bottom', 'assets/images/level/fence_bottom.png');
         this.game.load.image('fence_top', 'assets/images/level/fence_top.png');
