@@ -227,7 +227,12 @@
             }
             else if (this.hasTreasure == true)
             {
-                this.animations.play("treasureIdle", 24, true);
+                if (this.grid.getTileAtPlayer(this.x, this.y, 0, 0).getGridPosX == this.grid.getMidX && this.grid.getTileAtPlayer(this.x, this.y, 0, 0).getGridPosY == this.grid.getMidY) {
+
+                } else{
+                    this.animations.play("treasureIdle", 24, true);
+                }
+                
             }
             else
             {

@@ -40,7 +40,13 @@
 
     public moveTowards(x: number, y: number) {
         var tile: Tile = this.grid.getTile(x, y);
-
+        if (tile.getState() == TileState.WHEAT) {
+            this.alpha = 0;
+        }
+        else
+        {
+            this.alpha = 1;
+        }
         if (this.x > tile.getX()) {
             this.scale.setTo(-1, 1);
         } else if (this.x < tile.getX()) {
