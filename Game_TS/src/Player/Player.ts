@@ -163,7 +163,6 @@
     {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
-
         if (tile && this.moving == false && this.trapped == false && this.cutting == false)
         {
             var tileState = tile.getState();
@@ -228,7 +227,6 @@
             }
             
         }
-
         this.moving = false;
 
         this.targetTile.checkTile(this);

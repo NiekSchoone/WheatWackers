@@ -23,25 +23,24 @@
         this.callBack = callback;
         
         let client = this;
-        client.generateGrid();
-        //SOCKET.on("create_grid", function () {
-            
-        //    let serverData = [];
-        //    for (var x = 0; x < client.gridWidth; x++) {
-        //        serverData[x] = [];
-        //        for (var y = 0; y < client.gridHeight; y++) {
-        //            serverData[x][y] = client.getTile(x, y).getState() as number;
-        //        }
-        //    }
-        //    SOCKET.emit("grid_created", serverData);
-        //});
-        //SOCKET.on("init_grid", function (gridData) {
-        //    client.generateGridFromServer(gridData);
-        //});
+        SOCKET.on("create_grid", function () {
+            client.generateGrid();
+            let serverData = [];
+            for (var x = 0; x < client.gridWidth; x++) {
+                serverData[x] = [];
+                for (var y = 0; y < client.gridHeight; y++) {
+                    serverData[x][y] = client.getTile(x, y).getState() as number;
+                }
+            }
+            SOCKET.emit("grid_created", serverData);
+        });
+        SOCKET.on("init_grid", function (gridData) {
+            client.generateGridFromServer(gridData);
+        });
 
-        //SOCKET.on("wheat_cutted", function (tilePos) {
-        //    client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        //});
+        SOCKET.on("wheat_cutted", function (tilePos) {
+            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
+        });
     }
 
     public generateGrid() {
@@ -60,7 +59,7 @@
                 } else if (x == 0 || y == 0 || x == (this.gridWidth - 1) || y == (this.gridHeight - 1)) {
                     newTile.setTile(TileState.OBSTACLE);
                     if (x == 0 && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); }
-                    else if (x == (this.gridWidth - 1) && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top");  newTile.GetSprite().scale.setTo(-1,1); }
+                    else if (x == (this.gridWidth - 1) && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1,1); }
                     else if (x == 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); }
                     else if (x == (this.gridWidth - 1) && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
                     else if (x == 0 && y != 0) { newTile.GetSprite().loadTexture("fence_side"); }
@@ -88,7 +87,7 @@
                 newTile.setTile(gridData[x][y]);
                 if (x == 0 || y == 0 || x == (this.gridWidth - 1) || y == (this.gridHeight - 1)) {
                     if (x == 0 && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); }
-                    else if (x == (this.gridWidth - 1) && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); newTile.GetSprite().scale.setTo(-1, 1); }
+                    else if (x == (this.gridWidth - 1) && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
                     else if (x == 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); }
                     else if (x == (this.gridWidth - 1) && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
                     else if (x == 0 && y != 0) { newTile.GetSprite().loadTexture("fence_side"); }

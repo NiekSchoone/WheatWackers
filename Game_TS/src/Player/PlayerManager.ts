@@ -21,7 +21,11 @@
 
         SOCKET.emit("join_ready");
     }
-
+    joinAsPlayer(username: string) {
+        let playerNumber = this.getOpenPlayerSlot();
+        let spawnPoint = this.spawnPoints[playerNumber];
+        SOCKET.emit("joined", { playerID: playerNumber, username: username, spawnPoint: spawnPoint });
+    }
     createPlayer(playerData: any) {
         let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getX(), this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getY(), 'spawn_anim');
         this.player = new Player(this.game, this.grid, playerData.playerID, playerData.username, playerData.spawnPoint, spawnAnimation);
