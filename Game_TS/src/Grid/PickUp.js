@@ -32,6 +32,9 @@ var PickUp = (function (_super) {
             case PickUpType.mouseTrap:
                 this.loadTexture('PickUp_MouseTrap');
                 break;
+            case PickUpType.tool:
+                this.loadTexture('PickUp_tool');
+                break;
         }
         this.pickUpType = type;
         this.anchor.set(0.5);

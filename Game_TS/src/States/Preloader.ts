@@ -27,6 +27,7 @@
         this.game.load.image('PickUp_WaterCan', 'assets/images/PickUp/waterCan.png');
         this.game.load.image('PickUp_MouseTrap', 'assets/images/PickUp/mouseTrap.png');
         this.game.load.image('PickUp_Shovel', 'assets/images/PickUp/Shovel.png');
+        this.game.load.image('PickUp_tool', 'assets/images/PickUp/pickup_sikkel_001.png');
         this.game.load.image('treasure', 'assets/images/treasure/treasure.png');
         this.game.load.image('fence_side', 'assets/images/level/fence_side.png');
         this.game.load.image('fence_bottom', 'assets/images/level/fence_bottom.png');
