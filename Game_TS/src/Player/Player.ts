@@ -15,50 +15,51 @@
     private cutTime: number = 1000;
 
     private holdingTool: boolean = true;
-    private idleAnim;
-    private walkAnim;
+
+    public spawnAnimation: Phaser.Sprite;
+
+    public playerID: number;
+    public spawnPoint: any;
 
     public trapped: boolean = false;
     private holdingTreasure: boolean;
 
-    private trapOneKey;
-    private trapTwoKey;
-    private trapThreeKey;
-
     private targetTile: Tile;
 
-    constructor(game: Phaser.Game, grid: Grid, username: string, spawnPoint:any)
-    {
-        super(game, 0, 0, "idleRun1");
+    constructor(game: Phaser.Game, grid: Grid, id: number, username: string, spawnPoint: any, spawnAnim: Phaser.Sprite) {
+        super(game, 0, 0, "player_" + id);
 
         this.game = game;
         this.grid = grid;
+        this.playerID = id;
         this.username = username;
-        
-        this.animations.add("idle", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]);
-        this.animations.add("walk", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
+        this.spawnPoint = spawnPoint
+
+        this.spawnAnimation = spawnAnim;
+
+        this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
+        this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
+        this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
         this.animations.play("idle", 24, true);
-           
 
-        this.position.set(grid.getTile(2, 2).getX(), grid.getTile(2, 2).getY());
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
 
-        this.anchor.setTo(0.5);
+        this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
+
+        this.anchor.setTo(0.5, 0.75);
 
         this.moveDistance = this.grid.tileSize;
-        this.scale.setTo(0.5);
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this);
         game.camera.focusOnXY(this.x, this.y);
-            
-        game.world.setBounds(0, 0, 3024, 3024);
-        this.trapOneKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ONE);
-        this.trapTwoKey = this.game.input.keyboard.addKey(Phaser.Keyboard.TWO);
-        this.trapThreeKey = this.game.input.keyboard.addKey(Phaser.Keyboard.THREE);
 
-        this.trapOneKey.onDown.add(this.placeTrap.bind(this));
+        game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
     }
 
     update()
@@ -114,84 +115,60 @@
         }
     }
 
-    moveLeft()
-    {
-
-        if (this.moving == false)
-        {
-            //this.scale.x = -0.5;
-            this.scale.setTo(-0.5, 0.5);
+    moveLeft() {
+        if (this.moving == false) {
+            this.scale.setTo(-1, 1);
             this.moveTowards(-1, 0);
         }
     }
 
-    moveRight()
-    {
-        if (this.moving == false)
-        {
-            //this.scale.x = 0.5;
-            this.scale.setTo(0.5, 0.5);
+    moveRight() {
+        if (this.moving == false) {
+            this.scale.setTo(1, 1);
             this.moveTowards(1, 0);
         }
     }
 
-    moveTowards(_x: number, _y: number)
-    {
-        if (this.moving == false)
-        {
-            var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
-        }
+    moveTowards(_x: number, _y: number) {
+        var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
-        if (tile && this.moving == false && this.trapped == false)
-        {
-            this.targetTile = tile;
-
-            //console.log(tile.getX() + "  " + tile.getY());
+        if (tile && this.moving == false && this.trapped == false && this.cutting == false) {
             var tileState = tile.getState();
 
-            if (tileState == TileState.CUT || tileState == TileState.NONE)
-            {
+            if (tileState == TileState.CUT || tileState == TileState.NONE) {
                 this.moving = true;
-                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) / 2, y: tile.getY() - Math.abs(this.height) / 2 }, 500, Phaser.Easing.Linear.None, true);
-                tween.onComplete.add(this.onComplete, this, 1, tile);
                 this.animations.play("walk", 24, true);
-                
-                //SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
+                var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
+                tween.onComplete.add(this.onComplete, this);
+                SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
-            else if (tileState == TileState.WHEAT)
-            {
+            else if (tileState == TileState.WHEAT) {
+                this.moving = false;
+                this.animations.play("cut", 24, true);
                 this.cutting = true;
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
     }
 
-    cutWheat(tile: Tile)
-    {
-        if (this.cutting == true)
-        {
+    cutWheat(tile: Tile) {
+        if (this.cutting == true) {
             tile.setTile(TileState.CUT);
-            //this.onComplete();
+            tile.playCutAnim();
+            this.onComplete();
             this.cutting = false;
-            //SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
+            SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
     }
 
-    onComplete()
-    {
-        if (this.holdingKey == false)
-        {
+    onComplete() {
+        if (this.holdingKey == false) {
             this.animations.play("idle", 24, true);
         }
 
-        //this.position.set(this.targetTile.getX(), this.targetTile.getY());
-
         this.moving = false;
-
-        
         
         this.targetTile.checkTile(this);
-        
     }
 
     public getTrapped(time: number)
@@ -207,9 +184,10 @@
         alert("Released");
     }
 
-    public respawn(x:number, y:number)
+    public respawn()
     {
-        this.position.set(this.grid.getTile(x, y).getX(), this.grid.getTile(x, y).getY());
+        this.position.set(this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getX(), this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getY());
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
     }
 
     placeTrap()
@@ -226,5 +204,3 @@
         }
     }
 }
-
-             

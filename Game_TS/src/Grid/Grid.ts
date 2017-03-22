@@ -51,21 +51,26 @@
 
 
         this.obstacleDensity = 20;
-        for (let x = 0; x < this.gridWidth; x++){
+        for (let x = 0; x < this.gridWidth; x++) {
             this.tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
                 if (x < this.midPointX + this.spawnAreaSize && x > (this.midPointX - this.spawnAreaSize) && y < this.midPointY + this.spawnAreaSize && y > (this.midPointY - this.spawnAreaSize)) {
                     newTile.setTile(TileState.CUT);
-                    newTile.setZLayer(y * 3);
-                }
-                else if (Math.random() * 100 < this.obstacleDensity) {
+                } else if (x == 0 || y == 0 || x == (this.gridWidth - 1) || y == (this.gridHeight - 1)) {
                     newTile.setTile(TileState.OBSTACLE);
-                    newTile.setZLayer((y * 3) - 1);
-                }
-                else {
+                    if (x == 0 && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); }
+                    else if (x == (this.gridWidth - 1) && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top");  newTile.GetSprite().scale.setTo(-1,1); }
+                    else if (x == 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); }
+                    else if (x == (this.gridWidth - 1) && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
+                    else if (x == 0 && y != 0) { newTile.GetSprite().loadTexture("fence_side"); }
+                    else if (x == (this.gridWidth - 1) && y != 0) { newTile.GetSprite().loadTexture("fence_side"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
+                    else if (x != 0 && y == 0) { newTile.GetSprite().loadTexture("fence_top"); }
+                    else if (x != 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_bottom"); }
+                } else if (Math.random() * 100 < this.obstacleDensity) {
+                    newTile.setTile(TileState.OBSTACLE);
+                } else {
                     newTile.setTile(TileState.WHEAT);
-                    newTile.setZLayer(y * 3);
                 }
                 this.tiles[x][y] = newTile;
             }
@@ -81,6 +86,16 @@
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile: Tile = new Tile(this.game, x, y);
                 newTile.setTile(gridData[x][y]);
+                if (x == 0 || y == 0 || x == (this.gridWidth - 1) || y == (this.gridHeight - 1)) {
+                    if (x == 0 && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); }
+                    else if (x == (this.gridWidth - 1) && y == 0) { newTile.GetSprite().loadTexture("fence_corner_top"); newTile.GetSprite().scale.setTo(-1, 1); }
+                    else if (x == 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); }
+                    else if (x == (this.gridWidth - 1) && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_corner_bottom"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
+                    else if (x == 0 && y != 0) { newTile.GetSprite().loadTexture("fence_side"); }
+                    else if (x == (this.gridWidth - 1) && y != 0) { newTile.GetSprite().loadTexture("fence_side"); newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y); newTile.GetSprite().scale.setTo(-1, 1); }
+                    else if (x != 0 && y == 0) { newTile.GetSprite().loadTexture("fence_top"); }
+                    else if (x != 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_bottom"); }
+                }
                 this.tiles[x][y] = newTile;
             }
         }
@@ -95,6 +110,9 @@
         playerY -= (this.tileSize / 2);
         playerY = playerY / this.tileSize;
         playerY += directionY;
+
+        playerX = Math.round(playerX);
+        playerY = Math.round(playerY);
 
         if ((playerX > this.tiles.length - 1 || playerX < 0) || (playerY > this.tiles[0].length - 1 || playerY < 0)) {
             return null;

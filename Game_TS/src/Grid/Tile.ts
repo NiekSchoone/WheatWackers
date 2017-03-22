@@ -15,8 +15,10 @@ class Tile {
     private hasPickUp: boolean = false;
     private hasTrap: boolean = false;
     private currentSprite: Phaser.Sprite;
+    private animation: Phaser.Sprite;
     private currentState: TileState;
     private playerTraped: string;
+    private anchorPoint: any;
 
     constructor(_game: Phaser.Game, _x: number, _y: number)
     {
@@ -26,20 +28,36 @@ class Tile {
         this.tileSize = 144;
         this.spriteSize = 256;
 
-        let spriteOffsetX = (this.spriteSize - this.tileSize) / 2;
-        let spriteOffsetY = this.spriteSize - this.tileSize;
+        let anchorPointX = ((this.spriteSize - this.tileSize) / 2) / this.spriteSize;
+        let anchorPointY = (this.spriteSize - this.tileSize) / this.spriteSize;
 
-        this.currentSprite = new Phaser.Sprite(this.game, (this.xPos * this.tileSize) - spriteOffsetX, (this.yPos * this.tileSize) - spriteOffsetY);
+        this.anchorPoint = { x: anchorPointX, y: anchorPointY };
+
+        this.currentSprite = new Phaser.Sprite(this.game, (this.xPos * this.tileSize), (this.yPos * this.tileSize));
+        this.currentSprite.anchor.set(this.anchorPoint.x, this.anchorPoint.y);
         this.currentState = TileState.NONE;
 
+        this.animation = new Phaser.Sprite(this.game, (this.xPos * this.tileSize), (this.yPos * this.tileSize), "wheat_cut_anim");
+        this.animation.animations.add("cut", Phaser.ArrayUtils.numberArray(0, 14));
+        this.animation.anchor.set(this.anchorPoint.x, this.anchorPoint.y);
+        this.animation.visible = false;
+
         this.game.add.existing(this.currentSprite);
-    }
-    public setZLayer(layer: number) {
-        this.currentSprite.z = layer;
+        this.game.add.existing(this.animation);
     }
     public GetSprite() {
         return this.currentSprite;
     }
+    public GetAnimSprite() {
+        return this.animation;
+    }
+    public getAnchor() {
+        return this.anchorPoint;
+    }
+    public setAnchor(value: any) {
+        this.anchorPoint = value;
+    }
+
     public setTrap(_trap: Trap, playername: string) {
         if (!this.hasTrap) {
             this.hasTrap = true;
@@ -77,7 +95,6 @@ class Tile {
             }
             
         }
-
     }
 
     public getTrapStatus()
@@ -131,5 +148,9 @@ class Tile {
     // is occupied by wheat
     public getState() {
         return this.currentState;
+    }
+    public playCutAnim() {
+        this.animation.visible = true;
+        this.animation.play("cut", 24, false, true);
     }
 }

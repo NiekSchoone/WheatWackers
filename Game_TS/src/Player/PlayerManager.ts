@@ -2,37 +2,48 @@
 
     private player: Player;
     private opponents: Humanoid[];
-
+    private players: any[];
     private spawnPoints: any[];
-
     private game: Phaser.Game;
+    private group: Phaser.Group;
     private grid: Grid;
 
-    constructor(_game: Phaser.Game, _grid: Grid) {
+    constructor(_game: Phaser.Game, _grid: Grid, _group: Phaser.Group) {
         this.game = _game;
         this.grid = _grid;
         this.opponents = [];
-        this.spawnPoints = [{ x: 10, y: 9 }, { x: 9, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 10 }];
+        this.players = [null, null, null, null];
+        this.spawnPoints = [{ x: 11, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 12 }, { x: 12, y: 11 }];
 
         this.createEvents();
+
+        this.group = _group;
 
         SOCKET.emit("join_ready");
     }
 
-    createPlayer(_username: string, _spawnPoint:any) {
-        this.player = new Player(this.game, this.grid, _username, _spawnPoint);
+    createPlayer(playerData: any) {
+        let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getX(), this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getY(), 'spawn_anim');
+        this.player = new Player(this.game, this.grid, playerData.playerID, playerData.username, playerData.spawnPoint, spawnAnimation);
+        this.players[playerData.playerID] = this.player;
         this.game.add.existing(this.player);
+        this.group.add(this.player.spawnAnimation);
+        this.updateGroup();
     }
     createOpponent(playerData: any) {
-        let newOpponent = new Humanoid(this.game, this.grid, playerData.username, playerData.x, playerData.y);
+        let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.x, playerData.y).getX(), this.grid.getTile(playerData.x, playerData.y).getY(), 'spawn_anim');
+        let newOpponent = new Humanoid(this.game, this.grid, playerData.playerID, playerData.username, playerData.x, playerData.y, spawnAnimation);
+        this.players[playerData.playerID] = newOpponent;
         this.opponents.push(newOpponent);
         this.game.add.existing(newOpponent);
-        console.log(playerData.username + " joined as a new opponent");
+        this.group.add(newOpponent.spawnAnimation);
+        this.updateGroup();
     }
-    removeOpponent(_username: string) {
-        let opponentToRemove = this.getOpponentByName(_username);
-        this.opponents.splice(this.opponents.indexOf(opponentToRemove), 1);
+    removeOpponent(playerData: any) {
+        let opponentToRemove = this.getOpponentByID(playerData.playerID);
         opponentToRemove.destroy();
+        this.opponents.splice(this.opponents.indexOf(opponentToRemove), 1);
+        this.players[playerData.playerID] = null;
     }
     moveOpponent(moveData: any) {
         let opponent = this.getOpponentByName(moveData.player);
@@ -41,8 +52,9 @@
     createJoinWindow() {
         let client = this;
         let joinWindow = new JoinGameMenu(this.game, function (username: string) {
-            let spawnPoint = client.spawnPoints[client.opponents.length];
-            SOCKET.emit("joined", { username: username, x: spawnPoint.x, y: spawnPoint.y });
+            let playerNumber = client.getOpenPlayerSlot();
+            let spawnPoint = client.spawnPoints[playerNumber];
+            SOCKET.emit("joined", { playerID: playerNumber, username: username, spawnPoint: spawnPoint });
         });
     }
 
@@ -51,7 +63,7 @@
         SOCKET.on("join_game", client.createJoinWindow.bind(this));
 
         SOCKET.on("init_player", function (playerData) {
-            client.createPlayer(playerData.username, { x: playerData.x, y: playerData.y });
+            client.createPlayer(playerData);
         });
 
         SOCKET.on("init_opponents", function (opponents) {
@@ -73,6 +85,16 @@
         });
     }
 
+    updateGroup() {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i] != null) {
+                this.group.add(this.players[i]);
+            } else {
+                this.group.remove(this.players[i]);
+            }
+        }
+    }
+
     getOpponentByName(username: string) {
         for (let i = 0; i < this.opponents.length; i++) {
             if (this.opponents[i].username == username) {
@@ -80,6 +102,19 @@
             }
         }
     }
-    getOpenSpawn() {
+    getOpponentByID(id: number) {
+        for (let i = 0; i < this.opponents.length; i++) {
+            if (this.opponents[i].playerID == id) {
+                return this.opponents[i];
+            }
+        }
+    }
+    getOpenPlayerSlot(): number {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i] == null) {
+                return i;
+            }
+        }
     }
 }
+

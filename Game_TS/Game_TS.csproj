@@ -23,7 +23,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="assets\audio\music_loop.mp3" />
     <Content Include="assets\images\level\background.jpg" />
+    <Content Include="assets\images\level\fence_bottom.png" />
+    <Content Include="assets\images\level\fence_corner_bottom.png" />
+    <Content Include="assets\images\level\fence_corner_top.png" />
+    <Content Include="assets\images\level\fence_side.png" />
+    <Content Include="assets\images\level\fence_top.png" />
     <Content Include="assets\images\level\Obstacle_01.png" />
     <Content Include="assets\images\level\Obstacle_02.png" />
     <Content Include="assets\images\level\Obstacle_03.png" />
@@ -47,6 +53,7 @@
     <Content Include="assets\spritesheets\player_2.png" />
     <Content Include="assets\spritesheets\player_3.png" />
     <Content Include="assets\spritesheets\player_4.png" />
+    <Content Include="assets\spritesheets\wheat_cut_anim.png" />
     <Content Include="index.html" />
     <Content Include="lib\phaser.js" />
     <Content Include="lib\phaser.min.js" />

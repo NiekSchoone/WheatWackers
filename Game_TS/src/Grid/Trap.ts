@@ -18,7 +18,7 @@
         }
         else
         {
-            target.respawn(0, 0);
+            target.respawn();
         }
     }
 }

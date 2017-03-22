@@ -1,6 +1,6 @@
 class Game {
     constructor() {
-        this.game = new Phaser.Game(864, 864, Phaser.AUTO, 'content', { preload: this.preload, create: this.create });
+        this.game = new Phaser.Game(1280, 720, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
         this.game.stage = new Phaser.Stage(this.game);
         SOCKET = io.connect();
     }
@@ -17,73 +17,150 @@ class Game {
         this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
         this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
         this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
+        this.game.load.image('fence_side', 'assets/images/level/fence_side.png');
+        this.game.load.image('fence_bottom', 'assets/images/level/fence_bottom.png');
+        this.game.load.image('fence_top', 'assets/images/level/fence_top.png');
+        this.game.load.image('fence_corner_top', 'assets/images/level/fence_corner_top.png');
+        this.game.load.image('fence_corner_bottom', 'assets/images/level/fence_corner_bottom.png');
         this.game.load.image('button_join', 'assets/images/ui/button_join.png');
+        this.game.load.spritesheet('spawn_anim', 'assets/spritesheets/spawn_anim.png', 500, 800);
+        this.game.load.spritesheet('player_0', 'assets/spritesheets/player_1.png', 150, 150);
+        this.game.load.spritesheet('player_1', 'assets/spritesheets/player_2.png', 150, 150);
+        this.game.load.spritesheet('player_2', 'assets/spritesheets/player_3.png', 150, 150);
+        this.game.load.spritesheet('player_3', 'assets/spritesheets/player_4.png', 150, 150);
+        this.game.load.spritesheet('wheat_cut_anim', 'assets/spritesheets/wheat_cut_anim.png', 256, 256);
+        this.game.load.audio('music_loop', 'assets/audio/music_loop.mp3');
     }
     create() {
         this.game.stage.disableVisibilityChange = true;
-        this.background = new Phaser.TileSprite(this.game, 0, 0, 3024, 3024, 'background');
+        let gridSizeX = 23;
+        let gridSizeY = 23;
+        this.background = new Phaser.TileSprite(this.game, 0, 0, gridSizeX * 144, gridSizeY * 144, 'background');
         this.background.texture.width = 864;
         this.background.texture.height = 864;
         this.game.add.existing(this.background);
-        let gridSizeX = 21;
-        let gridSizeY = 21;
-        this.grid = new Grid(this.game, gridSizeX, gridSizeY);
-        this.playerManager = new PlayerManager(this.game, this.grid);
+        this.group = new Phaser.Group(this.game);
+        let client = this;
+        this.grid = new Grid(this.game, gridSizeX, gridSizeY, function (tiles) {
+            for (let i = 0; i < tiles.length; i++) {
+                let tile = tiles[i];
+                for (let j = 0; j < tile.length; j++) {
+                    client.group.add(tile[j].GetSprite());
+                    client.group.add(tile[j].GetAnimSprite());
+                }
+            }
+        });
+        this.playerManager = new PlayerManager(this.game, this.grid, this.group);
+        this.musicLoop = this.game.add.audio('music_loop', 0.25, true);
+        this.musicLoop.play();
+    }
+    update() {
+        this.group.sort("y", Phaser.Group.SORT_ASCENDING);
     }
 }
 window.onload = () => {
     var game = new Game();
 };
+class GameState {
+    gameState() {
+        //this.gamefield = new Grid(this.game, 35, 35);
+        //if first player
+        this.gamefield.generateGrid();
+        // else get grid from server;
+        //this.gamefield.generateGridFromServer();
+    }
+    joinGame() {
+        //send
+    }
+    newPlayer() {
+    }
+    newGame() {
+        this.gamefield.generateGrid();
+        for (let i = 0; i < this.players.length; i++) {
+        }
+    }
+}
 class Grid {
-    constructor(_game, _gridWidth, _gridHeight) {
+    constructor(_game, _gridWidth, _gridHeight, callback) {
         this.game = _game;
         this.gridWidth = _gridWidth;
         this.gridHeight = _gridHeight;
         this.spawnAreaSize = 2;
         this.tileSize = 144;
+        this.callBack = callback;
         let client = this;
-        SOCKET.on("create_grid", function () {
-            client.generateGrid();
-            let serverData = [];
-            for (var x = 0; x < client.gridWidth; x++) {
-                serverData[x] = [];
-                for (var y = 0; y < client.gridHeight; y++) {
-                    serverData[x][y] = client.getTile(x, y).getState();
-                }
-            }
-            SOCKET.emit("grid_created", serverData);
-        });
-        SOCKET.on("init_grid", function (gridData) {
-            client.generateGridFromServer(gridData);
-        });
-        SOCKET.on("wheat_cutted", function (tilePos) {
-            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        });
+        client.generateGrid();
+        //SOCKET.on("create_grid", function () {
+        //    let serverData = [];
+        //    for (var x = 0; x < client.gridWidth; x++) {
+        //        serverData[x] = [];
+        //        for (var y = 0; y < client.gridHeight; y++) {
+        //            serverData[x][y] = client.getTile(x, y).getState() as number;
+        //        }
+        //    }
+        //    SOCKET.emit("grid_created", serverData);
+        //});
+        //SOCKET.on("init_grid", function (gridData) {
+        //    client.generateGridFromServer(gridData);
+        //});
+        //SOCKET.on("wheat_cutted", function (tilePos) {
+        //    client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
+        //});
     }
     generateGrid() {
         this.tiles = [];
-        let midSizeX = Math.floor(this.gridWidth / 2);
-        let midSizeY = Math.floor(this.gridHeight / 2);
+        this.midPointX = Math.floor(this.gridWidth / 2);
+        this.midPointY = Math.floor(this.gridHeight / 2);
         this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++) {
             this.tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile = new Tile(this.game, x, y);
-                if (x < midSizeX + this.spawnAreaSize && x > (midSizeX - this.spawnAreaSize) && y < midSizeY + this.spawnAreaSize && y > (midSizeY - this.spawnAreaSize)) {
+                if (x < this.midPointX + this.spawnAreaSize && x > (this.midPointX - this.spawnAreaSize) && y < this.midPointY + this.spawnAreaSize && y > (this.midPointY - this.spawnAreaSize)) {
                     newTile.setTile(TileState.CUT);
-                    newTile.setZLayer(y * 3);
+                }
+                else if (x == 0 || y == 0 || x == (this.gridWidth - 1) || y == (this.gridHeight - 1)) {
+                    newTile.setTile(TileState.OBSTACLE);
+                    if (x == 0 && y == 0) {
+                        newTile.GetSprite().loadTexture("fence_corner_top");
+                    }
+                    else if (x == (this.gridWidth - 1) && y == 0) {
+                        newTile.GetSprite().loadTexture("fence_corner_top");
+                        newTile.GetSprite().scale.setTo(-1, 1);
+                    }
+                    else if (x == 0 && y == (this.gridHeight - 1)) {
+                        newTile.GetSprite().loadTexture("fence_corner_bottom");
+                    }
+                    else if (x == (this.gridWidth - 1) && y == (this.gridHeight - 1)) {
+                        newTile.GetSprite().loadTexture("fence_corner_bottom");
+                        newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y);
+                        newTile.GetSprite().scale.setTo(-1, 1);
+                    }
+                    else if (x == 0 && y != 0) {
+                        newTile.GetSprite().loadTexture("fence_side");
+                    }
+                    else if (x == (this.gridWidth - 1) && y != 0) {
+                        newTile.GetSprite().loadTexture("fence_side");
+                        newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y);
+                        newTile.GetSprite().scale.setTo(-1, 1);
+                    }
+                    else if (x != 0 && y == 0) {
+                        newTile.GetSprite().loadTexture("fence_top");
+                    }
+                    else if (x != 0 && y == (this.gridHeight - 1)) {
+                        newTile.GetSprite().loadTexture("fence_bottom");
+                    }
                 }
                 else if (Math.random() * 100 < this.obstacleDensity) {
                     newTile.setTile(TileState.OBSTACLE);
-                    newTile.setZLayer((y * 3) - 1);
                 }
                 else {
                     newTile.setTile(TileState.WHEAT);
-                    newTile.setZLayer(y * 3);
                 }
                 this.tiles[x][y] = newTile;
             }
         }
+        this.callBack(this.tiles);
     }
     generateGridFromServer(gridData) {
         this.tiles = [];
@@ -92,9 +169,41 @@ class Grid {
             for (let y = 0; y < this.gridHeight; y++) {
                 let newTile = new Tile(this.game, x, y);
                 newTile.setTile(gridData[x][y]);
+                if (x == 0 || y == 0 || x == (this.gridWidth - 1) || y == (this.gridHeight - 1)) {
+                    if (x == 0 && y == 0) {
+                        newTile.GetSprite().loadTexture("fence_corner_top");
+                    }
+                    else if (x == (this.gridWidth - 1) && y == 0) {
+                        newTile.GetSprite().loadTexture("fence_corner_top");
+                        newTile.GetSprite().scale.setTo(-1, 1);
+                    }
+                    else if (x == 0 && y == (this.gridHeight - 1)) {
+                        newTile.GetSprite().loadTexture("fence_corner_bottom");
+                    }
+                    else if (x == (this.gridWidth - 1) && y == (this.gridHeight - 1)) {
+                        newTile.GetSprite().loadTexture("fence_corner_bottom");
+                        newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y);
+                        newTile.GetSprite().scale.setTo(-1, 1);
+                    }
+                    else if (x == 0 && y != 0) {
+                        newTile.GetSprite().loadTexture("fence_side");
+                    }
+                    else if (x == (this.gridWidth - 1) && y != 0) {
+                        newTile.GetSprite().loadTexture("fence_side");
+                        newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y);
+                        newTile.GetSprite().scale.setTo(-1, 1);
+                    }
+                    else if (x != 0 && y == 0) {
+                        newTile.GetSprite().loadTexture("fence_top");
+                    }
+                    else if (x != 0 && y == (this.gridHeight - 1)) {
+                        newTile.GetSprite().loadTexture("fence_bottom");
+                    }
+                }
                 this.tiles[x][y] = newTile;
             }
         }
+        this.callBack(this.tiles);
     }
     // get tile at player coordinate +/- directionX and directionY on grid coordinate 
     getTileAtPlayer(playerX, playerY, directionX, directionY) {
@@ -104,6 +213,8 @@ class Grid {
         playerY -= (this.tileSize / 2);
         playerY = playerY / this.tileSize;
         playerY += directionY;
+        playerX = Math.round(playerX);
+        playerY = Math.round(playerY);
         if ((playerX > this.tiles.length - 1 || playerX < 0) || (playerY > this.tiles[0].length - 1 || playerY < 0)) {
             return null;
         }
@@ -118,8 +229,19 @@ class Grid {
     getAllTiles() {
         return this.tiles;
     }
+    getMidX() { return this.midPointX; }
+    getMidY() { return this.midPointY; }
     getGridWidth() { return this.gridWidth; }
     getGridHeight() { return this.gridHeight; }
+}
+class PickUp extends Phaser.Sprite {
+    constructor(game, type) {
+        super(game, 0, 0, '');
+        if (type == "treasure") {
+            this.loadTexture('treasure');
+        }
+        this.pickUpType = type;
+    }
 }
 var TileState;
 (function (TileState) {
@@ -130,22 +252,77 @@ var TileState;
 })(TileState || (TileState = {}));
 class Tile {
     constructor(_game, _x, _y) {
+        this.hasPickUp = false;
+        this.hasTrap = false;
         this.game = _game;
         this.xPos = _x;
         this.yPos = _y;
         this.tileSize = 144;
         this.spriteSize = 256;
-        let spriteOffsetX = (this.spriteSize - this.tileSize) / 2;
-        let spriteOffsetY = this.spriteSize - this.tileSize;
-        this.currentSprite = new Phaser.Sprite(this.game, (this.xPos * this.tileSize) - spriteOffsetX, (this.yPos * this.tileSize) - spriteOffsetY);
+        let anchorPointX = ((this.spriteSize - this.tileSize) / 2) / this.spriteSize;
+        let anchorPointY = (this.spriteSize - this.tileSize) / this.spriteSize;
+        this.anchorPoint = { x: anchorPointX, y: anchorPointY };
+        this.currentSprite = new Phaser.Sprite(this.game, (this.xPos * this.tileSize), (this.yPos * this.tileSize));
+        this.currentSprite.anchor.set(this.anchorPoint.x, this.anchorPoint.y);
         this.currentState = TileState.NONE;
+        this.animation = new Phaser.Sprite(this.game, (this.xPos * this.tileSize), (this.yPos * this.tileSize), "wheat_cut_anim");
+        this.animation.animations.add("cut", Phaser.ArrayUtils.numberArray(0, 14));
+        this.animation.anchor.set(this.anchorPoint.x, this.anchorPoint.y);
+        this.animation.visible = false;
         this.game.add.existing(this.currentSprite);
-    }
-    setZLayer(layer) {
-        this.currentSprite.z = layer;
+        this.game.add.existing(this.animation);
     }
     GetSprite() {
         return this.currentSprite;
+    }
+    GetAnimSprite() {
+        return this.animation;
+    }
+    getAnchor() {
+        return this.anchorPoint;
+    }
+    setAnchor(value) {
+        this.anchorPoint = value;
+    }
+    setTrap(_trap, playername) {
+        if (!this.hasTrap) {
+            this.hasTrap = true;
+            this.trap = _trap;
+            this.playerTraped = playername;
+            this.trap.position.set(128, 128);
+            console.log(this.trap.x, this.trap.y);
+            this.currentSprite.addChild(_trap);
+        }
+    }
+    setPickup(_pickUp) {
+        if (!this.hasPickUp) {
+            this.currentSprite.addChild(_pickUp);
+            this.hasPickUp = true;
+            this.pickUp = _pickUp;
+        }
+    }
+    checkTile(_player) {
+        if (this.hasPickUp) {
+            this.currentSprite.removeChild(this.pickUp);
+            this.pickUp = null;
+            this.hasPickUp = false;
+        }
+        else if (this.hasTrap) {
+            if (_player.username != this.playerTraped) {
+                this.trap.activateTrap(_player);
+                this.currentSprite.removeChild(this.trap);
+                this.trap = null;
+                this.hasTrap = false;
+                this.playerTraped = null;
+            }
+        }
+    }
+    getTrapStatus() {
+        return this.hasTrap;
+    }
+    setPickUp(_pickUp) {
+        this.pickUp = _pickUp;
+        this.hasPickUp = true;
     }
     //Set whether or not the grass is cut
     setTile(_newState) {
@@ -184,6 +361,25 @@ class Tile {
     getState() {
         return this.currentState;
     }
+    playCutAnim() {
+        this.animation.visible = true;
+        this.animation.play("cut", 24, false, true);
+    }
+}
+class Trap extends Phaser.Sprite {
+    constructor(game, trapTime = 0) {
+        super(game, 0, 0, "trap1");
+        this.trapTime = trapTime;
+        this.anchor.set(0.5);
+    }
+    activateTrap(target) {
+        if (this.trapTime != 0) {
+            target.getTrapped(this.trapTime);
+        }
+        else {
+            target.respawn();
+        }
+    }
 }
 class JoinGameMenu {
     constructor(_game, callback) {
@@ -215,59 +411,96 @@ class JoinGameMenu {
     }
 }
 class Humanoid extends Phaser.Sprite {
-    constructor(game, grid, username, x, y) {
-        super(game, 0, 0, "failguy");
+    constructor(game, grid, id, username, x, y, spawnAnim) {
+        super(game, 0, 0, "player_" + id);
         this.speed = 1000;
         this.grid = grid;
+        this.spawnPoint = { x: x, y: y };
         this.username = username;
+        this.playerID = id;
+        this.spawnAnimation = spawnAnim;
+        this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
+        this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
+        this.animations.play("idle", 24, true);
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
         this.position.set(grid.getTile(x, y).getX(), grid.getTile(x, y).getY());
+        this.anchor.setTo(0.5, 0.75);
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
-        this.anchor.setTo(0.5);
         this.cursorkeys = new Phaser.Key(game, 32);
     }
     moveTowards(x, y) {
         var tile = this.grid.getTile(x, y);
-        var tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, 500, Phaser.Easing.Linear.None, true);
+        if (this.x > tile.getX()) {
+            this.scale.setTo(-1, 1);
+        }
+        else if (this.x < tile.getX()) {
+            this.scale.setTo(1, 1);
+        }
+        this.animations.play("walk", 24, true);
+        var tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
+        tween.onComplete.add(this.onComplete, this);
     }
-    getCurrentTile() {
-        return this.grid.getTile(this.x, this.y);
+    onComplete() {
+        this.animations.play("idle", 24, true);
     }
 }
 class Player extends Phaser.Sprite {
-    constructor(game, grid, username, spawnPoint) {
-        super(game, 0, 0, "failguy");
+    constructor(game, grid, id, username, spawnPoint, spawnAnim) {
+        super(game, 0, 0, "player_" + id);
         this.speed = 5000;
         this.moving = false;
+        this.holdingKey = false;
         this.cutting = false;
         this.cutTime = 1000;
         this.holdingTool = true;
+        this.trapped = false;
         this.game = game;
         this.grid = grid;
+        this.playerID = id;
         this.username = username;
+        this.spawnPoint = spawnPoint;
+        this.spawnAnimation = spawnAnim;
+        this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
+        this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
+        this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
+        this.animations.play("idle", 24, true);
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
         this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
-        this.anchor.setTo(0.5);
+        this.anchor.setTo(0.5, 0.75);
         this.moveDistance = this.grid.tileSize;
-        this.scale.setTo(1);
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this);
         game.camera.focusOnXY(this.x, this.y);
-        game.world.setBounds(0, 0, 3024, 3024);
+        game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
     }
     update() {
         if (this.cursors.up.isDown) {
             this.moveUpwards();
+            this.holdingKey = true;
         }
         else if (this.cursors.down.isDown) {
             this.moveDownwards();
+            this.holdingKey = true;
         }
         else if (this.cursors.left.isDown) {
             this.moveLeft();
+            this.holdingKey = true;
         }
         else if (this.cursors.right.isDown) {
             this.moveRight();
+            this.holdingKey = true;
+        }
+        else {
+            this.holdingKey = false;
         }
         if (this.cutting == true) {
             if (this.moving == true) {
@@ -287,25 +520,30 @@ class Player extends Phaser.Sprite {
     }
     moveLeft() {
         if (this.moving == false) {
+            this.scale.setTo(-1, 1);
             this.moveTowards(-1, 0);
         }
     }
     moveRight() {
         if (this.moving == false) {
+            this.scale.setTo(1, 1);
             this.moveTowards(1, 0);
         }
     }
     moveTowards(_x, _y) {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
-        if (tile && this.moving == false) {
+        if (tile && this.moving == false && this.trapped == false && this.cutting == false) {
             var tileState = tile.getState();
             if (tileState == TileState.CUT || tileState == TileState.NONE) {
                 this.moving = true;
-                var tween = this.game.add.tween(this.body).to({ x: tile.getX() - this.width / 2, y: tile.getY() - this.height / 2 }, 500, Phaser.Easing.Linear.None, true);
+                this.animations.play("walk", 24, true);
+                var tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
                 SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT) {
+                this.moving = false;
+                this.animations.play("cut", 24, true);
                 this.cutting = true;
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
@@ -314,38 +552,75 @@ class Player extends Phaser.Sprite {
     cutWheat(tile) {
         if (this.cutting == true) {
             tile.setTile(TileState.CUT);
+            tile.playCutAnim();
             this.onComplete();
             this.cutting = false;
             SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
     }
     onComplete() {
+        if (this.holdingKey == false) {
+            this.animations.play("idle", 24, true);
+        }
         this.moving = false;
+        this.targetTile.checkTile(this);
+    }
+    getTrapped(time) {
+        this.trapped = true;
+        this.game.time.events.add(time, this.getUntrapped, this);
+        alert("Trapped");
+    }
+    getUntrapped() {
+        this.trapped = false;
+        alert("Released");
+    }
+    respawn() {
+        this.position.set(this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getX(), this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getY());
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
+    }
+    placeTrap() {
+        if (this.moving == false) {
+            var tile = this.grid.getTileAtPlayer(this.x, this.y, 0, 0);
+            if (tile.getTrapStatus() == false) {
+                var newTrap = new Trap(this.game, 10000);
+                tile.setTrap(newTrap, "FFF");
+            }
+        }
     }
 }
 class PlayerManager {
-    constructor(_game, _grid) {
+    constructor(_game, _grid, _group) {
         this.game = _game;
         this.grid = _grid;
         this.opponents = [];
-        this.spawnPoints = [{ x: 10, y: 9 }, { x: 9, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 10 }];
+        this.players = [null, null, null, null];
+        this.spawnPoints = [{ x: 11, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 12 }, { x: 12, y: 11 }];
         this.createEvents();
+        this.group = _group;
         SOCKET.emit("join_ready");
     }
-    createPlayer(_username, _spawnPoint) {
-        this.player = new Player(this.game, this.grid, _username, _spawnPoint);
+    createPlayer(playerData) {
+        let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getX(), this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getY(), 'spawn_anim');
+        this.player = new Player(this.game, this.grid, playerData.playerID, playerData.username, playerData.spawnPoint, spawnAnimation);
+        this.players[playerData.playerID] = this.player;
         this.game.add.existing(this.player);
+        this.group.add(this.player.spawnAnimation);
+        this.updateGroup();
     }
     createOpponent(playerData) {
-        let newOpponent = new Humanoid(this.game, this.grid, playerData.username, playerData.x, playerData.y);
+        let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.x, playerData.y).getX(), this.grid.getTile(playerData.x, playerData.y).getY(), 'spawn_anim');
+        let newOpponent = new Humanoid(this.game, this.grid, playerData.playerID, playerData.username, playerData.x, playerData.y, spawnAnimation);
+        this.players[playerData.playerID] = newOpponent;
         this.opponents.push(newOpponent);
         this.game.add.existing(newOpponent);
-        console.log(playerData.username + " joined as a new opponent");
+        this.group.add(newOpponent.spawnAnimation);
+        this.updateGroup();
     }
-    removeOpponent(_username) {
-        let opponentToRemove = this.getOpponentByName(_username);
-        this.opponents.splice(this.opponents.indexOf(opponentToRemove), 1);
+    removeOpponent(playerData) {
+        let opponentToRemove = this.getOpponentByID(playerData.playerID);
         opponentToRemove.destroy();
+        this.opponents.splice(this.opponents.indexOf(opponentToRemove), 1);
+        this.players[playerData.playerID] = null;
     }
     moveOpponent(moveData) {
         let opponent = this.getOpponentByName(moveData.player);
@@ -354,15 +629,16 @@ class PlayerManager {
     createJoinWindow() {
         let client = this;
         let joinWindow = new JoinGameMenu(this.game, function (username) {
-            let spawnPoint = client.spawnPoints[client.opponents.length];
-            SOCKET.emit("joined", { username: username, x: spawnPoint.x, y: spawnPoint.y });
+            let playerNumber = client.getOpenPlayerSlot();
+            let spawnPoint = client.spawnPoints[playerNumber];
+            SOCKET.emit("joined", { playerID: playerNumber, username: username, spawnPoint: spawnPoint });
         });
     }
     createEvents() {
         let client = this;
         SOCKET.on("join_game", client.createJoinWindow.bind(this));
         SOCKET.on("init_player", function (playerData) {
-            client.createPlayer(playerData.username, { x: playerData.x, y: playerData.y });
+            client.createPlayer(playerData);
         });
         SOCKET.on("init_opponents", function (opponents) {
             for (let i = 0; i < opponents.length; i++) {
@@ -379,6 +655,16 @@ class PlayerManager {
             client.moveOpponent(data);
         });
     }
+    updateGroup() {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i] != null) {
+                this.group.add(this.players[i]);
+            }
+            else {
+                this.group.remove(this.players[i]);
+            }
+        }
+    }
     getOpponentByName(username) {
         for (let i = 0; i < this.opponents.length; i++) {
             if (this.opponents[i].username == username) {
@@ -386,7 +672,19 @@ class PlayerManager {
             }
         }
     }
-    getOpenSpawn() {
+    getOpponentByID(id) {
+        for (let i = 0; i < this.opponents.length; i++) {
+            if (this.opponents[i].playerID == id) {
+                return this.opponents[i];
+            }
+        }
+    }
+    getOpenPlayerSlot() {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i] == null) {
+                return i;
+            }
+        }
     }
 }
 //# sourceMappingURL=app.js.map
