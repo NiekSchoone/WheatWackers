@@ -63,7 +63,7 @@ class Tile {
             this.hasTrap = true;
             this.trap = _trap;
             this.playerTraped = playername;
-            this.trap.position.set(128, 128);
+            this.trap.position.set(66,0 );
             console.log(this.trap.x, this.trap.y);
             this.currentSprite.addChild(_trap);
         }
@@ -71,6 +71,7 @@ class Tile {
     public setPickup(_pickUp: PickUp) {
         if (!this.hasPickUp)
         {
+            //_pickUp.position.set(128, 128);
             this.currentSprite.addChild(_pickUp);
             this.hasPickUp = true;
             this.pickUp = _pickUp;
@@ -80,6 +81,7 @@ class Tile {
     public checkTile(_player: Player) {
         if (this.hasPickUp)
         {
+            this.pickUp.activate(_player);
             this.currentSprite.removeChild(this.pickUp);
             this.pickUp = null;
             this.hasPickUp = false;
@@ -103,7 +105,6 @@ class Tile {
     {
         return this.hasTrap;
     }
-
     //Set whether or not the grass is cut
     public setTile(_newState: TileState) {
         if (_newState != this.currentState) {

@@ -3,7 +3,8 @@
     cow,
     wateringCan,
     mouseTrap,
-    shovel
+    shovel,
+    tool
 }
 class PickUp extends Phaser.Sprite
 {
@@ -31,6 +32,27 @@ class PickUp extends Phaser.Sprite
         }
 
         this.pickUpType = type;
+        this.anchor.set(0.5);
+    } 
+
+    public activate(player:Player)
+    {
+        switch (this.pickUpType) {
+            case PickUpType.treasure:
+                player.pickUpTreasure();
+                break;
+            case PickUpType.cow:
+                player.speed += 500;
+                break;
+            case PickUpType.tool:
+                player.holdingTool = true;   
+                break;
+            case PickUpType.shovel:
+                player.hasPitTrap = true;
+                break;
+            case PickUpType.mouseTrap:
+                player.hasMouseTrap = true;
+                break;
+        }
     }
-    
 }

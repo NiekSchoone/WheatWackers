@@ -71,7 +71,7 @@
                 } else if (Math.random() * 100 < this.obstacleDensity) {
                     newTile.setTile(TileState.OBSTACLE);
                 } else if (Math.random() * 100 < this.pickupDensity) {
-                    let newPickup: PickUp = new PickUp(this.game, Math.random() * 4)
+                    let newPickup: PickUp = new PickUp(this.game, Math.random() * 4+1)
                     newTile.setPickup(newPickup);
                     newTile.setTile(TileState.WHEAT);
                 }

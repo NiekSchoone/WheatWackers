@@ -5,7 +5,6 @@ class Game {
         SOCKET = io.connect();
     }
     preload() {
-        //Image loading
         this.game.load.image('background', 'assets/images/level/background.jpg');
         this.game.load.image('wheat_1', 'assets/images/level/wheat_01.png');
         this.game.load.image('wheat_2', 'assets/images/level/wheat_02.png');
@@ -24,20 +23,13 @@ class Game {
         this.game.load.image('fence_corner_top', 'assets/images/level/fence_corner_top.png');
         this.game.load.image('fence_corner_bottom', 'assets/images/level/fence_corner_bottom.png');
         this.game.load.image('button_join', 'assets/images/ui/button_join.png');
-        //Spritesheet loading
         this.game.load.spritesheet('spawn_anim', 'assets/spritesheets/spawn_anim.png', 500, 800);
         this.game.load.spritesheet('player_0', 'assets/spritesheets/player_1.png', 150, 150);
         this.game.load.spritesheet('player_1', 'assets/spritesheets/player_2.png', 150, 150);
         this.game.load.spritesheet('player_2', 'assets/spritesheets/player_3.png', 150, 150);
         this.game.load.spritesheet('player_3', 'assets/spritesheets/player_4.png', 150, 150);
         this.game.load.spritesheet('wheat_cut_anim', 'assets/spritesheets/wheat_cut_anim.png', 256, 256);
-        //Audio loading
         this.game.load.audio('music_loop', 'assets/audio/music_loop.mp3');
-        this.game.load.audio('button_sound', 'assets/audio/button_sound.mp3');
-        this.game.load.audio('spawn_sound', 'assets/audio/spawn_sound.mp3');
-        this.game.load.audio('walk_sound', 'assets/audio/walk_sound.mp3');
-        this.game.load.audio('cut_sound', 'assets/audio/cut_sound.mp3');
-        this.game.load.audio('cow_sound', 'assets/audio/cow_sound.mp3');
     }
     create() {
         this.game.stage.disableVisibilityChange = true;
@@ -97,23 +89,23 @@ class Grid {
         this.tileSize = 144;
         this.callBack = callback;
         let client = this;
-        SOCKET.on("create_grid", function () {
-            client.generateGrid();
-            let serverData = [];
-            for (var x = 0; x < client.gridWidth; x++) {
-                serverData[x] = [];
-                for (var y = 0; y < client.gridHeight; y++) {
-                    serverData[x][y] = client.getTile(x, y).getState();
-                }
-            }
-            SOCKET.emit("grid_created", serverData);
-        });
-        SOCKET.on("init_grid", function (gridData) {
-            client.generateGridFromServer(gridData);
-        });
-        SOCKET.on("wheat_cutted", function (tilePos) {
-            client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
-        });
+        client.generateGrid();
+        //SOCKET.on("create_grid", function () {
+        //    let serverData = [];
+        //    for (var x = 0; x < client.gridWidth; x++) {
+        //        serverData[x] = [];
+        //        for (var y = 0; y < client.gridHeight; y++) {
+        //            serverData[x][y] = client.getTile(x, y).getState() as number;
+        //        }
+        //    }
+        //    SOCKET.emit("grid_created", serverData);
+        //});
+        //SOCKET.on("init_grid", function (gridData) {
+        //    client.generateGridFromServer(gridData);
+        //});
+        //SOCKET.on("wheat_cutted", function (tilePos) {
+        //    client.getTile(tilePos.x, tilePos.y).setTile(TileState.CUT);
+        //});
     }
     generateGrid() {
         this.tiles = [];
@@ -134,7 +126,6 @@ class Grid {
                     }
                     else if (x == (this.gridWidth - 1) && y == 0) {
                         newTile.GetSprite().loadTexture("fence_corner_top");
-                        newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y);
                         newTile.GetSprite().scale.setTo(-1, 1);
                     }
                     else if (x == 0 && y == (this.gridHeight - 1)) {
@@ -184,7 +175,6 @@ class Grid {
                     }
                     else if (x == (this.gridWidth - 1) && y == 0) {
                         newTile.GetSprite().loadTexture("fence_corner_top");
-                        newTile.GetSprite().anchor.set(1 - newTile.getAnchor().x, newTile.getAnchor().y);
                         newTile.GetSprite().scale.setTo(-1, 1);
                     }
                     else if (x == 0 && y == (this.gridHeight - 1)) {
@@ -411,6 +401,8 @@ class JoinGameMenu {
     joinGame(_ip) {
         this.callback(document.getElementsByTagName("input")[0].value);
         this.destroy();
+        //return document.getElementsByTagName("input")[0].value;
+        //SOCKET.emit("joined", { username: document.getElementsByTagName("input")[0].value });
     }
     destroy() {
         this.joinButton.destroy();
@@ -540,7 +532,6 @@ class Player extends Phaser.Sprite {
     }
     moveTowards(_x, _y) {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
-        this.targetTile = tile;
         if (tile && this.moving == false && this.trapped == false && this.cutting == false) {
             var tileState = tile.getState();
             if (tileState == TileState.CUT || tileState == TileState.NONE) {
