@@ -22,6 +22,7 @@ class Game {
     }
 
     preload() {
+        //Image loading
         this.game.load.image('background', 'assets/images/level/background.jpg');
         this.game.load.image('wheat_1', 'assets/images/level/wheat_01.png');
         this.game.load.image('wheat_2', 'assets/images/level/wheat_02.png');
@@ -40,13 +41,22 @@ class Game {
         this.game.load.image('fence_corner_top', 'assets/images/level/fence_corner_top.png');
         this.game.load.image('fence_corner_bottom', 'assets/images/level/fence_corner_bottom.png');
         this.game.load.image('button_join', 'assets/images/ui/button_join.png');
+
+        //Spritesheet loading
         this.game.load.spritesheet('spawn_anim', 'assets/spritesheets/spawn_anim.png', 500, 800);
         this.game.load.spritesheet('player_0', 'assets/spritesheets/player_1.png', 150, 150);
         this.game.load.spritesheet('player_1', 'assets/spritesheets/player_2.png', 150, 150);
         this.game.load.spritesheet('player_2', 'assets/spritesheets/player_3.png', 150, 150);
         this.game.load.spritesheet('player_3', 'assets/spritesheets/player_4.png', 150, 150);
         this.game.load.spritesheet('wheat_cut_anim', 'assets/spritesheets/wheat_cut_anim.png', 256, 256);
+
+        //Audio loading
         this.game.load.audio('music_loop', 'assets/audio/music_loop.mp3');
+        this.game.load.audio('button_sound', 'assets/audio/button_sound.mp3');
+        this.game.load.audio('spawn_sound', 'assets/audio/spawn_sound.mp3');
+        this.game.load.audio('walk_sound', 'assets/audio/walk_sound.mp3');
+        this.game.load.audio('cut_sound', 'assets/audio/cut_sound.mp3');
+        this.game.load.audio('cow_sound', 'assets/audio/cow_sound.mp3');
     }
 
     create() {

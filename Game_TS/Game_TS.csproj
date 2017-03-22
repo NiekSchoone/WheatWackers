@@ -23,7 +23,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="assets\audio\button_sound.mp3" />
+    <Content Include="assets\audio\cow_sound.mp3" />
+    <Content Include="assets\audio\cut_sound.mp3" />
     <Content Include="assets\audio\music_loop.mp3" />
+    <Content Include="assets\audio\spawn_sound.mp3" />
+    <Content Include="assets\audio\walk_sound.mp3" />
     <Content Include="assets\images\level\background.jpg" />
     <Content Include="assets\images\level\fence_bottom.png" />
     <Content Include="assets\images\level\fence_corner_bottom.png" />
@@ -41,7 +46,6 @@
     <Content Include="assets\images\level\wheat_cut_01.png" />
     <Content Include="assets\images\level\wheat_cut_02.png" />
     <Content Include="assets\images\level\wheat_cut_03.png" />
-    <Content Include="assets\images\TestingAssets\grass.jpg" />
     <Content Include="assets\images\traps\trap_mouse_001.png" />
     <Content Include="assets\images\traps\trap_pit_stage_01_001.png" />
     <Content Include="assets\images\treasure\pickup_treasure_001.png" />
