@@ -23,6 +23,7 @@ app.use(express.static(__dirname));
 io.sockets.on("connection", function (socket) {
     //Push the connection.
     connections.push(socket);
+	
     console.log("Connected:  %s sockets connected", connections.length);
 	
     //Disconnect.
@@ -30,16 +31,19 @@ io.sockets.on("connection", function (socket) {
 		if(isPlayer(socket.id)){
 			var player = getPlayerObjectBySocket(socket.id);
 			socket.broadcast.emit("player_disconnected", player);
+			
 			console.log("Player " + player.playerID + " named " + player.username + " has disconnected");
+			
 			players.splice(players.indexOf(player), 1);
-			console.log(players);
 		}
 		connections.splice(connections.indexOf(socket), 1);
+		
         console.log("disconnected: %s sockets remaining", connections.length);
     });
 	
 	socket.on("grid_created", function(gridData){
 		grid = gridData;
+		
 		console.log(grid);
 	});
 	
@@ -58,6 +62,7 @@ io.sockets.on("connection", function (socket) {
 		players.push(player);
 		socket.emit("init_player", userData);
 		socket.broadcast.emit("player_joined", player);
+		
 		console.log("socket: " + player.socket + " has joined the game as player " + player.playerID + " with username " + player.username);
 	});
 	
@@ -71,6 +76,8 @@ io.sockets.on("connection", function (socket) {
 	});
 	socket.on("wheat_cut", function (cutData){
 		socket.broadcast.emit("wheat_cutted", cutData);
+		grid[cutData.x][cutData.y] = 2;
+		
 		console.log("tile x: " + cutData.x + " y: " + cutData.y + " was cut down");
 	});
 });

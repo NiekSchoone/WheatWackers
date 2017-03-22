@@ -2,22 +2,19 @@
 
     private player: Player;
     private opponents: Humanoid[];
-
     private players: any[];
-    
     private spawnPoints: any[];
-
     private game: Phaser.Game;
-    private grid: Grid;
-
     private group: Phaser.Group;
+    private grid: Grid;
+    //private spawnAnimation: Phaser.Sprite;
 
     constructor(_game: Phaser.Game, _grid: Grid, _group: Phaser.Group) {
         this.game = _game;
         this.grid = _grid;
         this.opponents = [];
         this.players = [null, null, null, null];
-        this.spawnPoints = [{ x: 10, y: 9 }, { x: 9, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 10 }];
+        this.spawnPoints = [{ x: 11, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 12 }, { x: 12, y: 11 }];
 
         this.createEvents();
 
@@ -27,16 +24,20 @@
     }
 
     createPlayer(playerData: any) {
-        this.player = new Player(this.game, this.grid, playerData.playerID, playerData.username, playerData.spawnPoint);
+        let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getX(), this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getY(), 'spawn_anim');
+        this.player = new Player(this.game, this.grid, playerData.playerID, playerData.username, playerData.spawnPoint, spawnAnimation);
         this.players[playerData.playerID] = this.player;
         this.game.add.existing(this.player);
+        this.group.add(this.player.spawnAnimation);
         this.updateGroup();
     }
     createOpponent(playerData: any) {
-        let newOpponent = new Humanoid(this.game, this.grid, playerData.playerID, playerData.username, playerData.x, playerData.y);
+        let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.x, playerData.y).getX(), this.grid.getTile(playerData.x, playerData.y).getY(), 'spawn_anim');
+        let newOpponent = new Humanoid(this.game, this.grid, playerData.playerID, playerData.username, playerData.x, playerData.y, spawnAnimation);
         this.players[playerData.playerID] = newOpponent;
         this.opponents.push(newOpponent);
         this.game.add.existing(newOpponent);
+        this.group.add(newOpponent.spawnAnimation);
         this.updateGroup();
     }
     removeOpponent(playerData: any) {
@@ -93,7 +94,6 @@
                 this.group.remove(this.players[i]);
             }
         }
-        console.log(this.group);
     }
 
     getOpponentByName(username: string) {

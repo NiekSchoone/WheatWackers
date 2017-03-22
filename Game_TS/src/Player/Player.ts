@@ -15,8 +15,8 @@
     private cutTime: number = 1000;
 
     private holdingTool: boolean = true;
-    private idleAnim;
-    private walkAnim;
+
+    public spawnAnimation: Phaser.Sprite;
 
     public playerID: number;
     public spawnPoint: any;
@@ -24,7 +24,7 @@
     public trapped: boolean = false;
     private holdingTreasure: boolean;
 
-    constructor(game: Phaser.Game, grid: Grid, id: number, username: string, spawnPoint:any)
+    constructor(game: Phaser.Game, grid: Grid, id: number, username: string, spawnPoint: any, spawnAnim: Phaser.Sprite)
     {
         super(game, 0, 0, "player_" + id);
 
@@ -34,10 +34,17 @@
         this.username = username;
         this.spawnPoint = spawnPoint
 
+        this.spawnAnimation = spawnAnim;
+
         this.animations.add("idle", Phaser.ArrayUtils.numberArray(62,101));
         this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
         this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
         this.animations.play("idle", 24, true);
+
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
 
         this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
 
@@ -50,8 +57,8 @@
         this.cursors = game.input.keyboard.createCursorKeys();
         game.camera.follow(this);
         game.camera.focusOnXY(this.x, this.y);
-            
-        game.world.setBounds(0, 0, 3024, 3024);
+
+        game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
     }
 
     update()
@@ -128,16 +135,16 @@
     {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
         
-        if (tile && this.moving == false && this.trapped == false)
+        if (tile && this.moving == false && this.trapped == false && this.cutting == false)
         {
             var tileState = tile.getState();
 
             if (tileState == TileState.CUT || tileState == TileState.NONE)
             {
                 this.moving = true;
+                this.animations.play("walk", 24, true);
                 var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
-                this.animations.play("walk", 24, true);
                 SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
             }
             else if (tileState == TileState.WHEAT)
@@ -155,9 +162,10 @@
         if (this.cutting == true)
         {
             tile.setTile(TileState.CUT);
+            tile.playCutAnim();
             this.onComplete();
             this.cutting = false;
-            //SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
+            SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
         }
     }
 
@@ -180,9 +188,9 @@
         this.trapped = false;
     }
 
-    public respawn(x:number, y:number)
+    public respawn()
     {
-        this.position.set(this.grid.getTile(x, y).getX(), this.grid.getTile(x, y).getY());
+        this.position.set(this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getX(), this.grid.getTile(this.spawnPoint.x, this.spawnPoint.y).getY());
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
     }
 }
-
