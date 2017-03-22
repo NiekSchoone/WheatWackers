@@ -4,6 +4,7 @@
     private gridHeight: number;
     private tiles: Tile[][];
     private obstacleDensity: number;
+    private pickupDensity: number;
     private spawnAreaSize: number;
     public tileSize: number;
 
@@ -51,6 +52,7 @@
 
 
         this.obstacleDensity = 20;
+        this.pickupDensity = 20;
         for (let x = 0; x < this.gridWidth; x++) {
             this.tiles[x] = [];
             for (let y = 0; y < this.gridHeight; y++) {
@@ -69,15 +71,32 @@
                     else if (x != 0 && y == (this.gridHeight - 1)) { newTile.GetSprite().loadTexture("fence_bottom"); }
                 } else if (Math.random() * 100 < this.obstacleDensity) {
                     newTile.setTile(TileState.OBSTACLE);
-                } else {
+                } else if (Math.random() * 100 < this.pickupDensity) {
+                    let newPickup: PickUp = new PickUp(this.game, Math.random() * 4)
+                    newTile.setPickup(newPickup);
                     newTile.setTile(TileState.WHEAT);
                 }
+                else {
+                    newTile.setTile(TileState.WHEAT);
+                }
+                
                 this.tiles[x][y] = newTile;
+                
             }
         }
         this.callBack(this.tiles);
     }
-
+    public setPickupAlpha(alpha: number) {
+        for (let x = 0; x < this.gridWidth; x++) {
+            for (let y = 0; y < this.gridHeight; y++) {
+                let tile: Tile = this.tiles[x][y];
+                if (tile.getPickupStatus && tile.getState() != TileState.CUT)
+                {
+                    tile.setpickUpAlpha(alpha);
+                }
+            }
+        }
+    }
     public generateGridFromServer(gridData: number[][]) {
         this.tiles = [];
 

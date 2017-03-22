@@ -24,6 +24,7 @@
                 }
             }
         });
+
         this.playerManager = new PlayerManager(this.game, this.gamefield, this.group);
         
         this.playerManager.joinAsPlayer(this.playername);

@@ -96,15 +96,12 @@ class Tile {
             
         }
     }
-
+    public getPickupStatus() {
+        return this.hasPickUp;
+    }
     public getTrapStatus()
     {
         return this.hasTrap;
-    }
-
-    public setPickUp(_pickUp: PickUp) {
-        this.pickUp = _pickUp;
-        this.hasPickUp = true;
     }
 
     //Set whether or not the grass is cut
@@ -119,6 +116,8 @@ class Tile {
                     break;
                 case TileState.CUT:
                     this.currentSprite.loadTexture('wheat_cut_' + this.getRandomNumber(3));
+                    if (this.hasPickUp)
+                    { this.setpickUpAlpha(0); }
                     break;
                 case TileState.OBSTACLE:
                     this.currentSprite.loadTexture('obstacle_' + this.getRandomNumber(3));
@@ -148,6 +147,9 @@ class Tile {
     // is occupied by wheat
     public getState() {
         return this.currentState;
+    }
+    public setpickUpAlpha(alpha: number) {
+        this.pickUp.alpha = alpha;
     }
     public playCutAnim() {
         this.animation.visible = true;

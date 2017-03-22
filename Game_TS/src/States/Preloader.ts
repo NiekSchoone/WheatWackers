@@ -13,7 +13,11 @@
         this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
         this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
         this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
-        this.game.load.image('button_join', 'assets/images/ui/button_join.png');
+        this.game.load.image('PickUp_Cow', 'assets/images/PickUp/cow.png');
+        this.game.load.image('PickUp_WaterCan', 'assets/images/PickUp/waterCan.png');
+        this.game.load.image('PickUp_MouseTrap', 'assets/images/PickUp/mouseTrap.png');
+        this.game.load.image('PickUp_Shovel', 'assets/images/PickUp/Shovel.png');
+        this.game.load.image('treasure', 'assets/images/treasure/treasure.png');
         this.game.load.image('menuBackground', 'assets/images/MenuBackground.jpg');
         this.game.load.spritesheet('CreateButton', 'assets/images/UI/buttonCreate.png', 512, 256);
         this.game.load.spritesheet('HowToButton', 'assets/images/UI/buttonHowTo.png', 512, 256);
@@ -25,6 +29,7 @@
         
         this.game.state.start("MenuState")
     }
+
     initStates() {
         this.game.state.add("MenuState", MenuState);
         this.game.state.add("GameState", GameState);
