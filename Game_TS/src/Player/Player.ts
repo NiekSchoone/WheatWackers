@@ -132,6 +132,8 @@
     moveTowards(_x: number, _y: number) {
         var tile = this.grid.getTileAtPlayer(this.x, this.y, _x, _y);
 
+        this.targetTile = tile;
+
         if (tile && this.moving == false && this.trapped == false && this.cutting == false) {
             var tileState = tile.getState();
 
@@ -165,9 +167,7 @@
         if (this.holdingKey == false) {
             this.animations.play("idle", 24, true);
         }
-
         this.moving = false;
-        
         this.targetTile.checkTile(this);
     }
 

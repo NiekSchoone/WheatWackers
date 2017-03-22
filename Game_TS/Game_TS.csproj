@@ -23,7 +23,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="assets\audio\button_sound.mp3" />
+    <Content Include="assets\audio\cow_sound.mp3" />
+    <Content Include="assets\audio\cut_sound.mp3" />
     <Content Include="assets\audio\music_loop.mp3" />
+    <Content Include="assets\audio\spawn_sound.mp3" />
+    <Content Include="assets\audio\walk_sound.mp3" />
     <Content Include="assets\images\level\background.jpg" />
     <Content Include="assets\images\level\fence_bottom.png" />
     <Content Include="assets\images\level\fence_corner_bottom.png" />

@@ -26,8 +26,6 @@
     private joinGame(_ip?: string) {
         this.callback(document.getElementsByTagName("input")[0].value);
         this.destroy();
-        //return document.getElementsByTagName("input")[0].value;
-        //SOCKET.emit("joined", { username: document.getElementsByTagName("input")[0].value });
     }
 
     public destroy() {
