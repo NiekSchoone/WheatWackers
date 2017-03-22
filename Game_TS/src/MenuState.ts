@@ -9,11 +9,13 @@
         this.backgroung.width = this.game.width;
         this.backgroung.height = this.game.height;
         
-        this.createUsernameElement();
-        document.body.insertBefore(this.userInput, this.game.canvas);
+        //this.createUsernameElement();
+        //document.body.insertBefore(this.userInput, this.game.canvas);
    
-        this.joinButton = this.add.button(this.game.world.centerX-256, 300, 'JoinButton', this.joinButtonDown, this, 0, 1);
-        this.howToButton = this.add.button(this.game.world.centerX-256, 500, 'HowToButton', this.howToButtonDown, this, 0, 1);
+        this.joinButton = this.add.button(this.game.world.centerX + 100, 250, 'JoinButton', this.joinButtonDown, this, 0, 1);
+        this.joinButton.angle = 5;
+        this.howToButton = this.add.button(this.game.world.centerX + 100, 450, 'HowToButton', this.howToButtonDown, this, 0, 1);
+        this.howToButton.angle = 5;
     }
     private createUsernameElement() {
         this.userInput = document.createElement('input');
