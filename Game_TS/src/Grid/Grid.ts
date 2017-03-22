@@ -48,7 +48,6 @@
         this.midPointX = Math.floor(this.gridWidth / 2);
         this.midPointY = Math.floor(this.gridHeight / 2);
 
-
         this.obstacleDensity = 20;
         for (let x = 0; x < this.gridWidth; x++) {
             this.tiles[x] = [];

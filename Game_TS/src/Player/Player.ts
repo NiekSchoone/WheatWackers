@@ -8,23 +8,20 @@
     private moving: boolean = false;
     private holdingKey: boolean = false;
     private playerScale: number;
-
     private moveDistance: number;
-
     private cutting: boolean = false;
     private cutTime: number = 1000;
-
     private holdingTool: boolean = true;
-
     public spawnAnimation: Phaser.Sprite;
-
     public playerID: number;
     public spawnPoint: any;
-
     public trapped: boolean = false;
     private holdingTreasure: boolean;
-
     private targetTile: Tile;
+
+    private spawnSound: Phaser.Sound;
+    private walkSound: Phaser.Sound;
+    private cutSound: Phaser.Sound;
 
     constructor(game: Phaser.Game, grid: Grid, id: number, username: string, spawnPoint: any, spawnAnim: Phaser.Sprite) {
         super(game, 0, 0, "player_" + id);
@@ -37,15 +34,14 @@
 
         this.spawnAnimation = spawnAnim;
 
+        this.spawnSound = this.game.add.audio('spawn_sound', 1, false);
+        this.walkSound = this.game.add.audio('walk_sound', 1);
+        this.cutSound = this.game.add.audio('cut_sound', 1, true);
+
         this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
         this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
         this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
         this.animations.play("idle", 24, true);
-
-        this.spawnAnimation.anchor.set(0.5, 0.88);
-        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
-        this.game.add.existing(this.spawnAnimation);
-        this.spawnAnimation.animations.play('spawn', 24, false, true);
 
         this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
 
@@ -53,13 +49,18 @@
 
         this.moveDistance = this.grid.tileSize;
 
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        game.physics.arcade.enable(this);
+        this.game.physics.arcade.enable(this);
         this.cursors = game.input.keyboard.createCursorKeys();
-        game.camera.follow(this);
-        game.camera.focusOnXY(this.x, this.y);
+        this.game.camera.follow(this);
+        this.game.camera.focusOnXY(this.x, this.y);
 
-        game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
+        this.game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
+
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
+        this.spawnSound.play();
     }
 
     update()
@@ -140,6 +141,7 @@
             if (tileState == TileState.CUT || tileState == TileState.NONE) {
                 this.moving = true;
                 this.animations.play("walk", 24, true);
+                this.walkSound.play();
                 var tween: Phaser.Tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
                 SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
@@ -148,6 +150,7 @@
                 this.moving = false;
                 this.animations.play("cut", 24, true);
                 this.cutting = true;
+                this.cutSound.play();
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
@@ -160,6 +163,7 @@
             this.onComplete();
             this.cutting = false;
             SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
+            this.cutSound.stop();
         }
     }
 

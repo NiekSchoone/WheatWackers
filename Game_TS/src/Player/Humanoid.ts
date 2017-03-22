@@ -9,6 +9,8 @@
     public playerID: number;
     public username: string;
 
+    private spawnSound: Phaser.Sound;
+
     constructor(game: Phaser.Game, grid: Grid, id: number, username: string, x: number, y: number, spawnAnim: Phaser.Sprite) {
         super(game, 0, 0, "player_" + id);
 
@@ -18,15 +20,11 @@
         this.playerID = id;
 
         this.spawnAnimation = spawnAnim;
+        this.spawnSound = this.game.add.audio('spawn_sound', 1, false);
 
         this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
         this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
         this.animations.play("idle", 24, true);
-
-        this.spawnAnimation.anchor.set(0.5, 0.88);
-        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
-        this.game.add.existing(this.spawnAnimation);
-        this.spawnAnimation.animations.play('spawn', 24, false, true);
 
         this.position.set(grid.getTile(x, y).getX(), grid.getTile(x, y).getY());
 
@@ -36,6 +34,12 @@
         game.physics.arcade.enable(this);
 
         this.cursorkeys = new Phaser.Key(game, 32);
+
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
+        this.spawnSound.play();
     }
 
     public moveTowards(x: number, y: number) {

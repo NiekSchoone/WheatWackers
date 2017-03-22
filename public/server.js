@@ -3,8 +3,6 @@ var app = express();
 var server = require("http").createServer(app);
 var io = require("socket.io").listen(server);
 
-var events = require("events");
-
 var connections = [];
 var players = [];
 var grid;
@@ -47,7 +45,7 @@ io.sockets.on("connection", function (socket) {
 		console.log(grid);
 	});
 	
-	socket.on("join_ready", function(){
+	socket.on("joining", function(){
 		if(grid != undefined){
 			socket.emit("init_grid", grid);
 		}else{

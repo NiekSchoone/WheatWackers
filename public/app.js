@@ -1,55 +1,51 @@
 class Game {
     constructor() {
-        this.game = new Phaser.Game(1280, 720, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
+        this.game = new Phaser.Game(1280, 720, Phaser.AUTO, 'content', { create: this.create });
         this.game.stage = new Phaser.Stage(this.game);
         SOCKET = io.connect();
     }
+    create() {
+        this.game.state.add("BootState", BootState, true);
+    }
+}
+window.onload = () => {
+    var game = new Game();
+};
+class BootState extends Phaser.State {
+    init() {
+    }
     preload() {
-        //Image loading
-        this.game.load.image('background', 'assets/images/level/background.jpg');
-        this.game.load.image('wheat_1', 'assets/images/level/wheat_01.png');
-        this.game.load.image('wheat_2', 'assets/images/level/wheat_02.png');
-        this.game.load.image('wheat_3', 'assets/images/level/wheat_03.png');
-        this.game.load.image('wheat_4', 'assets/images/level/wheat_04.png');
-        this.game.load.image('wheat_5', 'assets/images/level/wheat_05.png');
-        this.game.load.image('wheat_cut_1', 'assets/images/level/wheat_cut_01.png');
-        this.game.load.image('wheat_cut_2', 'assets/images/level/wheat_cut_02.png');
-        this.game.load.image('wheat_cut_3', 'assets/images/level/wheat_cut_03.png');
-        this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
-        this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
-        this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
-        this.game.load.image('fence_side', 'assets/images/level/fence_side.png');
-        this.game.load.image('fence_bottom', 'assets/images/level/fence_bottom.png');
-        this.game.load.image('fence_top', 'assets/images/level/fence_top.png');
-        this.game.load.image('fence_corner_top', 'assets/images/level/fence_corner_top.png');
-        this.game.load.image('fence_corner_bottom', 'assets/images/level/fence_corner_bottom.png');
-        this.game.load.image('button_join', 'assets/images/ui/button_join.png');
-        //Spritesheet loading
-        this.game.load.spritesheet('spawn_anim', 'assets/spritesheets/spawn_anim.png', 500, 800);
-        this.game.load.spritesheet('player_0', 'assets/spritesheets/player_1.png', 150, 150);
-        this.game.load.spritesheet('player_1', 'assets/spritesheets/player_2.png', 150, 150);
-        this.game.load.spritesheet('player_2', 'assets/spritesheets/player_3.png', 150, 150);
-        this.game.load.spritesheet('player_3', 'assets/spritesheets/player_4.png', 150, 150);
-        this.game.load.spritesheet('wheat_cut_anim', 'assets/spritesheets/wheat_cut_anim.png', 256, 256);
-        //Audio loading
-        this.game.load.audio('music_loop', 'assets/audio/music_loop.mp3');
-        this.game.load.audio('button_sound', 'assets/audio/button_sound.mp3');
-        this.game.load.audio('spawn_sound', 'assets/audio/spawn_sound.mp3');
-        this.game.load.audio('walk_sound', 'assets/audio/walk_sound.mp3');
-        this.game.load.audio('cut_sound', 'assets/audio/cut_sound.mp3');
-        this.game.load.audio('cow_sound', 'assets/audio/cow_sound.mp3');
+        this.game.load.image('loading', 'assets/images/ui/loading_image.png');
     }
     create() {
+        this.initStates();
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+        this.game.state.start("Preloader");
+    }
+    initStates() {
+        this.game.state.add("Preloader", Preloader);
+        this.game.state.add("MenuState", MenuState);
+        this.game.state.add("GameState", GameState);
+    }
+}
+class GameState extends Phaser.State {
+    init(_username) {
+        this.playername = _username;
+    }
+    create() {
+        let client = this;
         this.game.stage.disableVisibilityChange = true;
         let gridSizeX = 23;
         let gridSizeY = 23;
+        this.game.physics.arcade.enable(this);
+        this.game.camera.flash(0x000000, 1000);
+        this.game.camera.focusOnXY((gridSizeX * 144) / 2, (gridSizeX * 144) / 2);
         this.background = new Phaser.TileSprite(this.game, 0, 0, gridSizeX * 144, gridSizeY * 144, 'background');
         this.background.texture.width = 864;
         this.background.texture.height = 864;
         this.game.add.existing(this.background);
         this.group = new Phaser.Group(this.game);
-        let client = this;
-        this.grid = new Grid(this.game, gridSizeX, gridSizeY, function (tiles) {
+        this.gamefield = new Grid(this.game, gridSizeX, gridSizeY, function (tiles) {
             for (let i = 0; i < tiles.length; i++) {
                 let tile = tiles[i];
                 for (let j = 0; j < tile.length; j++) {
@@ -58,34 +54,12 @@ class Game {
                 }
             }
         });
-        this.playerManager = new PlayerManager(this.game, this.grid, this.group);
-        this.musicLoop = this.game.add.audio('music_loop', 0.25, true);
+        this.playerManager = new PlayerManager(this.game, this.gamefield, this.group, this.playername);
+        this.musicLoop = this.game.add.audio('music_loop', 0.05, true);
         this.musicLoop.play();
     }
     update() {
         this.group.sort("y", Phaser.Group.SORT_ASCENDING);
-    }
-}
-window.onload = () => {
-    var game = new Game();
-};
-class GameState {
-    gameState() {
-        //this.gamefield = new Grid(this.game, 35, 35);
-        //if first player
-        this.gamefield.generateGrid();
-        // else get grid from server;
-        //this.gamefield.generateGridFromServer();
-    }
-    joinGame() {
-        //send
-    }
-    newPlayer() {
-    }
-    newGame() {
-        this.gamefield.generateGrid();
-        for (let i = 0; i < this.players.length; i++) {
-        }
     }
 }
 class Grid {
@@ -427,18 +401,20 @@ class Humanoid extends Phaser.Sprite {
         this.username = username;
         this.playerID = id;
         this.spawnAnimation = spawnAnim;
+        this.spawnSound = this.game.add.audio('spawn_sound', 1, false);
         this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
         this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
         this.animations.play("idle", 24, true);
-        this.spawnAnimation.anchor.set(0.5, 0.88);
-        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
-        this.game.add.existing(this.spawnAnimation);
-        this.spawnAnimation.animations.play('spawn', 24, false, true);
         this.position.set(grid.getTile(x, y).getX(), grid.getTile(x, y).getY());
         this.anchor.setTo(0.5, 0.75);
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this);
         this.cursorkeys = new Phaser.Key(game, 32);
+        this.spawnAnimation.anchor.set(0.5, 0.88);
+        this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
+        this.game.add.existing(this.spawnAnimation);
+        this.spawnAnimation.animations.play('spawn', 24, false, true);
+        this.spawnSound.play();
     }
     moveTowards(x, y) {
         var tile = this.grid.getTile(x, y);
@@ -472,23 +448,26 @@ class Player extends Phaser.Sprite {
         this.username = username;
         this.spawnPoint = spawnPoint;
         this.spawnAnimation = spawnAnim;
+        this.spawnSound = this.game.add.audio('spawn_sound', 1, false);
+        this.walkSound = this.game.add.audio('walk_sound', 1);
+        this.cutSound = this.game.add.audio('cut_sound', 1, true);
         this.animations.add("idle", Phaser.ArrayUtils.numberArray(62, 101));
         this.animations.add("walk", Phaser.ArrayUtils.numberArray(0, 30));
         this.animations.add("cut", Phaser.ArrayUtils.numberArray(162, 175));
         this.animations.play("idle", 24, true);
+        this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
+        this.anchor.setTo(0.5, 0.75);
+        this.moveDistance = this.grid.tileSize;
+        this.game.physics.arcade.enable(this);
+        this.cursors = game.input.keyboard.createCursorKeys();
+        this.game.camera.follow(this);
+        this.game.camera.focusOnXY(this.x, this.y);
+        this.game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
         this.spawnAnimation.anchor.set(0.5, 0.88);
         this.spawnAnimation.animations.add('spawn', Phaser.ArrayUtils.numberArray(0, 15));
         this.game.add.existing(this.spawnAnimation);
         this.spawnAnimation.animations.play('spawn', 24, false, true);
-        this.position.set(grid.getTile(spawnPoint.x, spawnPoint.y).getX(), grid.getTile(spawnPoint.x, spawnPoint.y).getY());
-        this.anchor.setTo(0.5, 0.75);
-        this.moveDistance = this.grid.tileSize;
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        game.physics.arcade.enable(this);
-        this.cursors = game.input.keyboard.createCursorKeys();
-        game.camera.follow(this);
-        game.camera.focusOnXY(this.x, this.y);
-        game.world.setBounds(0, 0, this.grid.getGridWidth() * 144, this.grid.getGridHeight() * 144);
+        this.spawnSound.play();
     }
     update() {
         if (this.cursors.up.isDown) {
@@ -546,6 +525,7 @@ class Player extends Phaser.Sprite {
             if (tileState == TileState.CUT || tileState == TileState.NONE) {
                 this.moving = true;
                 this.animations.play("walk", 24, true);
+                this.walkSound.play();
                 var tween = this.game.add.tween(this.body).to({ x: tile.getX() - Math.abs(this.width) * 0.5, y: tile.getY() - Math.abs(this.height) * 0.75 }, 500, Phaser.Easing.Linear.None, true);
                 tween.onComplete.add(this.onComplete, this);
                 SOCKET.emit("player_move", { player: this.username, x: tile.getGridPosX(), y: tile.getGridPosY() });
@@ -554,6 +534,7 @@ class Player extends Phaser.Sprite {
                 this.moving = false;
                 this.animations.play("cut", 24, true);
                 this.cutting = true;
+                this.cutSound.play();
                 this.game.time.events.add(this.cutTime, this.cutWheat, this, tile);
             }
         }
@@ -565,6 +546,7 @@ class Player extends Phaser.Sprite {
             this.onComplete();
             this.cutting = false;
             SOCKET.emit("wheat_cut", { x: tile.getGridPosX(), y: tile.getGridPosY() });
+            this.cutSound.stop();
         }
     }
     onComplete() {
@@ -598,15 +580,21 @@ class Player extends Phaser.Sprite {
     }
 }
 class PlayerManager {
-    constructor(_game, _grid, _group) {
+    constructor(_game, _grid, _group, username) {
         this.game = _game;
         this.grid = _grid;
+        this.playerName = username;
         this.opponents = [];
         this.players = [null, null, null, null];
         this.spawnPoints = [{ x: 11, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 12 }, { x: 12, y: 11 }];
         this.createEvents();
         this.group = _group;
-        SOCKET.emit("join_ready");
+        SOCKET.emit("joining");
+    }
+    joinAsPlayer() {
+        let playerNumber = this.getOpenPlayerSlot();
+        let spawnPoint = this.spawnPoints[playerNumber];
+        SOCKET.emit("joined", { playerID: playerNumber, username: this.playerName, spawnPoint: spawnPoint });
     }
     createPlayer(playerData) {
         let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getX(), this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getY(), 'spawn_anim');
@@ -635,17 +623,9 @@ class PlayerManager {
         let opponent = this.getOpponentByName(moveData.player);
         opponent.moveTowards(moveData.x, moveData.y);
     }
-    createJoinWindow() {
-        let client = this;
-        let joinWindow = new JoinGameMenu(this.game, function (username) {
-            let playerNumber = client.getOpenPlayerSlot();
-            let spawnPoint = client.spawnPoints[playerNumber];
-            SOCKET.emit("joined", { playerID: playerNumber, username: username, spawnPoint: spawnPoint });
-        });
-    }
     createEvents() {
         let client = this;
-        SOCKET.on("join_game", client.createJoinWindow.bind(this));
+        SOCKET.on("join_game", client.joinAsPlayer.bind(this));
         SOCKET.on("init_player", function (playerData) {
             client.createPlayer(playerData);
         });
@@ -694,6 +674,103 @@ class PlayerManager {
                 return i;
             }
         }
+    }
+}
+class MenuState extends Phaser.State {
+    create() {
+        this.game.physics.arcade.enable(this);
+        this.game.camera.flash(0x000000, 1000);
+        this.backgroung = this.game.add.sprite(0, 0, 'menuBackground');
+        this.backgroung.width = this.game.width;
+        this.backgroung.height = this.game.height;
+        this.createUsernameElement();
+        document.body.insertBefore(this.userInput, this.game.canvas);
+        this.buttonSound = this.game.add.sound("button_sound", 1, false);
+        this.joinButton = this.add.button(this.game.world.centerX - 256, 300, 'JoinButton', this.joinButtonDown, this, 0, 1);
+        this.howToButton = this.add.button(this.game.world.centerX - 256, 500, 'HowToButton', this.howToButtonDown, this, 0, 1);
+    }
+    createUsernameElement() {
+        this.userInput = document.createElement('input');
+        this.userInput.style.right = "50%";
+        this.userInput.style.width = "250px";
+        this.userInput.style.position = "fixed";
+        this.userInput.style.margin = "10% -125px 0px 0px";
+        this.userInput.style.display = "block";
+    }
+    createButtonDown() {
+    }
+    howToButtonDown() {
+        this.buttonSound.play();
+    }
+    joinButtonDown() {
+        this.buttonSound.play();
+        let client = this;
+        this.camera.onFadeComplete.add(function () {
+            client.game.state.start("GameState", true, false, document.getElementsByTagName("input")[0].value);
+            document.body.removeChild(client.userInput);
+        });
+        this.game.camera.fade(0x000000, 1000);
+    }
+}
+class Preloader extends Phaser.State {
+    preload() {
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+        this.game.physics.arcade.enable(this);
+        this.loadingImage = this.game.add.sprite(150, 150, "loading");
+        this.loadingImage.anchor.setTo(0.5, 0.5);
+        //Image loading
+        this.game.load.image('menuBackground', 'assets/images/MenuBackground.jpg');
+        this.game.load.image('background', 'assets/images/level/background.jpg');
+        this.game.load.image('wheat_1', 'assets/images/level/wheat_01.png');
+        this.game.load.image('wheat_2', 'assets/images/level/wheat_02.png');
+        this.game.load.image('wheat_3', 'assets/images/level/wheat_03.png');
+        this.game.load.image('wheat_4', 'assets/images/level/wheat_04.png');
+        this.game.load.image('wheat_5', 'assets/images/level/wheat_05.png');
+        this.game.load.image('wheat_cut_1', 'assets/images/level/wheat_cut_01.png');
+        this.game.load.image('wheat_cut_2', 'assets/images/level/wheat_cut_02.png');
+        this.game.load.image('wheat_cut_3', 'assets/images/level/wheat_cut_03.png');
+        this.game.load.image('obstacle_1', 'assets/images/level/obstacle_01.png');
+        this.game.load.image('obstacle_2', 'assets/images/level/obstacle_02.png');
+        this.game.load.image('obstacle_3', 'assets/images/level/obstacle_03.png');
+        this.game.load.image('fence_side', 'assets/images/level/fence_side.png');
+        this.game.load.image('fence_bottom', 'assets/images/level/fence_bottom.png');
+        this.game.load.image('fence_top', 'assets/images/level/fence_top.png');
+        this.game.load.image('fence_corner_top', 'assets/images/level/fence_corner_top.png');
+        this.game.load.image('fence_corner_bottom', 'assets/images/level/fence_corner_bottom.png');
+        this.game.load.image('button_join', 'assets/images/ui/button_join.png');
+        this.game.load.image('ui_bar', 'assets/images/ui/ui_bar.png');
+        //Spritesheet loading
+        this.game.load.spritesheet('spawn_anim', 'assets/spritesheets/spawn_anim.png', 500, 800);
+        this.game.load.spritesheet('player_0', 'assets/spritesheets/player_1.png', 150, 150);
+        this.game.load.spritesheet('player_1', 'assets/spritesheets/player_2.png', 150, 150);
+        this.game.load.spritesheet('player_2', 'assets/spritesheets/player_3.png', 150, 150);
+        this.game.load.spritesheet('player_3', 'assets/spritesheets/player_4.png', 150, 150);
+        this.game.load.spritesheet('wheat_cut_anim', 'assets/spritesheets/wheat_cut_anim.png', 256, 256);
+        this.game.load.spritesheet('CreateButton', 'assets/images/ui/buttonCreate.png', 512, 256);
+        this.game.load.spritesheet('HowToButton', 'assets/images/ui/buttonHowTo.png', 512, 256);
+        this.game.load.spritesheet('JoinButton', 'assets/images/ui/buttonJoin.png', 512, 256);
+        //Audio loading
+        this.game.load.audio('music_loop', 'assets/audio/music_loop.mp3');
+        this.game.load.audio('button_sound', 'assets/audio/button_sound.mp3');
+        this.game.load.audio('spawn_sound', 'assets/audio/spawn_sound.mp3');
+        this.game.load.audio('walk_sound', 'assets/audio/walk_sound.mp3');
+        this.game.load.audio('cut_sound', 'assets/audio/cut_sound.mp3');
+        this.game.load.audio('cow_sound', 'assets/audio/cow_sound.mp3');
+    }
+    update() {
+        this.loadingImage.angle += 1;
+    }
+    create() {
+        this.initStates();
+        let client = this;
+        this.camera.onFadeComplete.add(function () {
+            client.game.state.start("MenuState");
+        });
+        this.game.camera.fade(0x000000, 1000);
+    }
+    initStates() {
+        this.game.state.add("MenuState", MenuState);
+        this.game.state.add("GameState", GameState);
     }
 }
 //# sourceMappingURL=app.js.map

@@ -8,9 +8,13 @@
     private group: Phaser.Group;
     private grid: Grid;
 
-    constructor(_game: Phaser.Game, _grid: Grid, _group: Phaser.Group) {
+    private playerName: string;
+
+    constructor(_game: Phaser.Game, _grid: Grid, _group: Phaser.Group, username:string) {
         this.game = _game;
         this.grid = _grid;
+        this.playerName = username;
+
         this.opponents = [];
         this.players = [null, null, null, null];
         this.spawnPoints = [{ x: 11, y: 10 }, { x: 10, y: 11 }, { x: 11, y: 12 }, { x: 12, y: 11 }];
@@ -19,12 +23,13 @@
 
         this.group = _group;
 
-        SOCKET.emit("join_ready");
+        SOCKET.emit("joining");
     }
-    joinAsPlayer(username: string) {
+
+    joinAsPlayer() {
         let playerNumber = this.getOpenPlayerSlot();
         let spawnPoint = this.spawnPoints[playerNumber];
-        SOCKET.emit("joined", { playerID: playerNumber, username: username, spawnPoint: spawnPoint });
+        SOCKET.emit("joined", { playerID: playerNumber, username: this.playerName, spawnPoint: spawnPoint });
     }
     createPlayer(playerData: any) {
         let spawnAnimation = new Phaser.Sprite(this.game, this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getX(), this.grid.getTile(playerData.spawnPoint.x, playerData.spawnPoint.y).getY(), 'spawn_anim');
@@ -53,18 +58,11 @@
         let opponent = this.getOpponentByName(moveData.player);
         opponent.moveTowards(moveData.x, moveData.y);
     }
-    createJoinWindow() {
-        let client = this;
-        let joinWindow = new JoinGameMenu(this.game, function (username: string) {
-            let playerNumber = client.getOpenPlayerSlot();
-            let spawnPoint = client.spawnPoints[playerNumber];
-            SOCKET.emit("joined", { playerID: playerNumber, username: username, spawnPoint: spawnPoint });
-        });
-    }
 
     createEvents() {
         let client = this;
-        SOCKET.on("join_game", client.createJoinWindow.bind(this));
+
+        SOCKET.on("join_game", client.joinAsPlayer.bind(this));
 
         SOCKET.on("init_player", function (playerData) {
             client.createPlayer(playerData);
