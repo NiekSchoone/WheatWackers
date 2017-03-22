@@ -289,7 +289,7 @@
         if (this.holdingTool == true)
         {
             this.holdingTool = false;
-            this.grid.getTileAtPlayer(this.x, this.y, 0, 0).setPickup(new PickUp(this.game, "sickle"));
+            this.grid.getTileAtPlayer(this.x, this.y, 0, 0).setPickup(new PickUp(this.game, PickUpType.tool));
         }
     }
 
